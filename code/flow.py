@@ -27,7 +27,10 @@ from gateway import ensure_gateway
 from persistence import SessionStore
 from recovery import handle_critic_verdict, plan_recovery
 from schemas import AgentResult, NodeState
-from skills import SkillRegistry, run_skill
+from skills import (SkillRegistry, run_skill,
+                    compress_result, reset_compression_log,
+                    compression_summary, count_downstream_readers,
+                    COMPRESSION_LOG)
 
 MAX_NODES = 60  # hard cap so a Planner loop cannot grow forever
 
@@ -209,6 +212,7 @@ class Executor:
         except Exception as e:
             print(f"[memory.remember] skipped: {e!r}")
 
+        reset_compression_log()
         formatter_answer: str | None = None
         executed_count = 0
         # Per-target cap for critic-fail recovery; see P1 #5 fix below.
@@ -303,6 +307,14 @@ class Executor:
                   f"The final answer reflects missing data from these "
                   f"branches because the Critic rejected the re-planned "
                   f"output too.")
+        # Update downstream reader counts on compression log entries.
+        for entry in COMPRESSION_LOG:
+            if entry.get("downstream_readers", 0) == 0:
+                nid = entry.get("node_id", "")
+                entry["downstream_readers"] = count_downstream_readers(nid, graph.g.nodes)
+        summary = compression_summary()
+        if summary:
+            print(summary)
         print(f"\n{'═' * 78}\nFINAL: {(formatter_answer or '')[:600]}\n{'═' * 78}\n")
         return formatter_answer or ""
 
@@ -321,6 +333,13 @@ class Executor:
             result = AgentResult(success=False, agent_name=skill_name,
                                  error=f"exception: {type(e).__name__}: {e}")
             prompt = "(exception before prompt-render)"
+
+        # Token Miser: compress large outputs from retrieval skills automatically.
+        if result.success and skill_name in ("researcher", "retriever"):
+            compressed = await compress_result(result.output, skill_name, nid, sid)
+            if compressed is not None:
+                graph.g.nodes[nid]["compressed_output"] = compressed
+
         return nid, result, prompt
 
 

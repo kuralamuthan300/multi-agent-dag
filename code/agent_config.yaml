@@ -84,6 +84,12 @@ coder:
   max_tokens: 1500
   description: Generate accurate, modular code to solve complex calculations and data tasks reliably.
 
+token_miser:
+  prompt: prompts/token_miser.md
+  temperature: 0.0
+  max_tokens: 2048
+  description: Lossy-compression-of-format / lossless-compression-of-facts filter that strips noise from retrieval outputs.
+
 browser:
   prompt: prompts/browser.md
   temperature: 0.3

@@ -32,6 +32,147 @@ from schemas import AgentResult, NodeSpec
 ROOT = Path(__file__).parent
 AGENT_CONFIG_PATH = ROOT / "agent_config.yaml"
 
+# ── compression stats ────────────────────────────────────────────────────────
+# Global accumulator for session-level token miser summary. Re-set by the
+# executor at session start; each compression call appends a dict.
+COMPRESSION_LOG: list[dict] = []
+
+def reset_compression_log() -> None:
+    global COMPRESSION_LOG
+    COMPRESSION_LOG = []
+
+def log_compression_entry(entry: dict) -> None:
+    global COMPRESSION_LOG
+    COMPRESSION_LOG.append(entry)
+
+def compression_summary() -> str:
+    if not COMPRESSION_LOG:
+        return ""
+    total_in = sum(e.get("input_chars", 0) for e in COMPRESSION_LOG)
+    total_out = sum(e.get("output_chars", 0) for e in COMPRESSION_LOG)
+    total_miser_tokens = sum(e.get("miser_cost_tokens", 0) for e in COMPRESSION_LOG)
+    n_comps = len(COMPRESSION_LOG)
+    gross_saved_chars = sum(
+        (e.get("input_chars", 0) - e.get("output_chars", 0)) * max(e.get("downstream_readers", 0), 1)
+        for e in COMPRESSION_LOG
+    )
+    net_saved_tokens = gross_saved_chars // 4 - total_miser_tokens
+    pct = ((total_in - total_out) / max(total_in, 1)) * 100
+    lines = [
+        f"\n{'─' * 60}",
+        "TOKEN MISER — SESSION SUMMARY",
+        f"{'─' * 60}",
+        f"  Nodes compressed: {n_comps}",
+        f"  Total input chars: {total_in:,}",
+        f"  Total output chars: {total_out:,}",
+        f"  Overall compression: {pct:.1f}%",
+        f"  Gross chars saved (× downstream readers): {gross_saved_chars:,}",
+        f"  Est. token savings: ~{gross_saved_chars // 4:,}",
+        f"  Miser LLM cost (est. tokens): −{total_miser_tokens:,}",
+        f"  Net estimated token savings: ~{net_saved_tokens:,}",
+        f"{'─' * 60}",
+    ]
+    return "\n".join(lines)
+
+
+# ── Token Miser: compress large retrieval outputs ──────────────────────────
+
+_COMPRESSION_TRIGGER_CHARS = 600  # only compress outputs above this size
+
+async def compress_result(output: dict, skill_name: str, node_id: str,
+                          session_id: str) -> str | None:
+    """Run the Token Miser on a skill's text output when it's large enough.
+
+    Returns compressed markdown text, or None if the output is
+    too small or compression fails.
+
+    The compressed text is stored on the graph node so every downstream
+    reader gets compact input — one compression call, N consumers benefit.
+    """
+    # Flatten the output to a single string for compression.
+    raw_text = _flatten_output(output)
+    # Also try the full JSON serialization (catches structured findings).
+    if len(raw_text) < _COMPRESSION_TRIGGER_CHARS:
+        full_json = json.dumps(output, default=str, indent=2)
+        if len(full_json) > _COMPRESSION_TRIGGER_CHARS * 2:
+            raw_text = full_json
+    if len(raw_text) < _COMPRESSION_TRIGGER_CHARS:
+        return None
+
+    # Load the token_miser prompt and call a cheap LLM.
+    miser_prompt_path = ROOT / "prompts" / "token_miser.md"
+    if not miser_prompt_path.exists():
+        return None
+    system_prompt = miser_prompt_path.read_text()
+    full_prompt = f"{system_prompt}\n\nInput text to compress:\n\n{raw_text[:15_000]}"
+
+    try:
+        reply = await asyncio.to_thread(
+            LLM().chat,
+            prompt=full_prompt,
+            agent="token_miser",
+            session=session_id,
+            provider=None,  # use default cheap provider
+            max_tokens=2048,
+            temperature=0.0,
+        )
+    except Exception as e:
+        print(f"  [token_miser] compression failed on {node_id}: {e!r}")
+        return None
+
+    parsed = parse_skill_json(reply.get("text", ""))
+    compressed = parsed.get("compressed", "")
+    if not compressed:
+        return None
+
+    # Calculate stats.
+    input_chars = len(raw_text)
+    output_chars = len(compressed)
+    miser_input_tokens = reply.get("input_tokens", 0)
+    miser_output_tokens = reply.get("output_tokens", 0)
+    miser_cost_tokens = miser_input_tokens + miser_output_tokens
+    compression_pct = ((input_chars - output_chars) / max(input_chars, 1)) * 100
+
+    stats = {
+        "node_id": node_id,
+        "skill": skill_name,
+        "input_chars": input_chars,
+        "output_chars": output_chars,
+        "compression_pct": compression_pct,
+        "miser_cost_tokens": miser_cost_tokens,
+        "downstream_readers": 0,  # set later
+    }
+    log_compression_entry(stats)
+
+    print(f"  [token_miser] {node_id} ({skill_name}): "
+          f"{input_chars:,} chars → {output_chars:,} chars "
+          f"({compression_pct:.0f}% reduction, ~{miser_cost_tokens} miser tokens)")
+    return compressed
+
+
+def _flatten_output(output: dict) -> str:
+    """Convert a skill's output dict to a single string for compression."""
+    parts = []
+    for key, val in output.items():
+        if isinstance(val, str):
+            parts.append(val)
+        elif isinstance(val, (list, tuple)) and all(isinstance(v, str) for v in val):
+            parts.extend(val)
+        elif isinstance(val, dict):
+            parts.append(json.dumps(val, default=str)[:5000])
+    return "\n".join(parts)
+
+
+def count_downstream_readers(node_id: str, graph_nodes) -> int:
+    """Count how many downstream nodes reference this node as input."""
+    count = 0
+    for nid, data in graph_nodes.items():
+        if nid == node_id:
+            continue
+        for inp in data.get("inputs", []):
+            if inp == node_id:
+                count += 1
+    return count
 
 # ── catalogue ────────────────────────────────────────────────────────────────
 
@@ -94,8 +235,15 @@ def resolve_inputs(node_inputs: list[str], graph_nodes, query: str) -> list[dict
         elif inp.startswith("n:") and inp in graph_nodes:
             upstream = graph_nodes[inp].get("result")
             if isinstance(upstream, AgentResult):
-                out.append({"id": inp, "kind": "upstream",
-                            "skill": upstream.agent_name, "output": upstream.output})
+                # Prefer compressed output when available (set by Token Miser).
+                compressed = graph_nodes[inp].get("compressed_output")
+                if compressed is not None:
+                    out.append({"id": inp, "kind": "upstream",
+                                "skill": upstream.agent_name, "output": compressed,
+                                "compressed": True})
+                else:
+                    out.append({"id": inp, "kind": "upstream",
+                                "skill": upstream.agent_name, "output": upstream.output})
             else:
                 out.append({"id": inp, "kind": "upstream-missing", "output": None})
         elif inp.startswith("art:"):
