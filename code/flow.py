@@ -165,47 +165,6 @@ class Graph:
                 self.g.add_edge(critic_nid, child_nid)
                 added.append(critic_nid)
 
-        # Token Miser auto-insertion: place a token_miser node between
-        # researcher/retriever and every downstream child. The miser
-        # compresses the raw output into dense fact bullets so downstream
-        # skills see smaller prompts. This appears as a visible node in
-        # the DAG just like Critic.
-        src_skill = self.g.nodes[src_nid]["skill"]
-        if src_skill in ("researcher", "retriever") and added:
-            for child_nid in list(added):
-                # Skip children that already have a Critic between them and
-                # the source (the Critic was inserted above).
-                preds = list(self.g.predecessors(child_nid))
-                if any(self.g.nodes[p].get("skill") == "critic" for p in preds):
-                    # Rewire the critic's input to read from miser instead.
-                    # The critic will run after the miser.
-                    for p in preds:
-                        if self.g.nodes[p].get("skill") == "critic":
-                            self.g.remove_edge(p, child_nid)
-                            # Insert miser between source and critic
-                            miser_nid = self.add_node(
-                                "token_miser", inputs=[src_nid],
-                                metadata={"source": src_nid, "target": child_nid},
-                            )
-                            self.g.add_edge(miser_nid, p)
-                            self.g.add_edge(p, child_nid)
-                            added.append(miser_nid)
-                            break
-                else:
-                    self.g.remove_edge(src_nid, child_nid)
-                    miser_nid = self.add_node(
-                        "token_miser", inputs=[src_nid],
-                        metadata={"source": src_nid, "target": child_nid},
-                    )
-                    self.g.add_edge(miser_nid, child_nid)
-                    added.append(miser_nid)
-                # Rewire the child's input references: n:source → n:miser
-                child_inputs = self.g.nodes[child_nid].get("inputs", [])
-                if src_nid in child_inputs:
-                    idx = child_inputs.index(src_nid)
-                    child_inputs[idx] = miser_nid
-                    self.g.nodes[child_nid]["inputs"] = child_inputs
-
         return added
 
 
@@ -327,6 +286,27 @@ class Executor:
                             continue
                         # verdict == pass: the child is now ready to run.
                     graph.extend_from(nid, result, registry=self.registry)
+                    # Token Miser: auto-insert between researcher/retriever and children
+                    if graph.g.nodes[nid]["skill"] in ("researcher", "retriever"):
+                        children = list(graph.g.successors(nid))
+                        for child_nid in children:
+                            if graph.g.nodes[child_nid].get("skill") in ("token_miser", "critic"):
+                                continue
+                            # Create token_miser node that reads from this node
+                            miser_nid = graph.add_node(
+                                "token_miser", inputs=[nid],
+                                metadata={"source": nid, "target": child_nid},
+                            )
+                            # Rewire: researcher → miser → child
+                            graph.g.remove_edge(nid, child_nid)
+                            graph.g.add_edge(miser_nid, child_nid)
+                            # Update child's input references
+                            child_inputs = graph.g.nodes[child_nid].get("inputs", [])
+                            if nid in child_inputs:
+                                idx = child_inputs.index(nid)
+                                child_inputs[idx] = miser_nid
+                                graph.g.nodes[child_nid]["inputs"] = child_inputs
+                            print(f"  └─ inserted token_miser ({miser_nid}) between {nid} → {child_nid}")
                     if graph.g.nodes[nid]["skill"] == "formatter":
                         fa = result.output.get("final_answer")
                         if isinstance(fa, str) and fa.strip():
