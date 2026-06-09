@@ -82,7 +82,7 @@ coder:
   internal_successors: [sandbox_executor]
   temperature: 0.2
   max_tokens: 1500
-  description: STUB. Student assignment for Session 8. Emits Python code; the orchestrator hands it to sandbox_executor next.
+  description: Generate accurate, modular code to solve complex calculations and data tasks reliably.
 
 browser:
   prompt: prompts/browser.md
