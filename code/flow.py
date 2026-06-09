@@ -28,9 +28,9 @@ from persistence import SessionStore
 from recovery import handle_critic_verdict, plan_recovery
 from schemas import AgentResult, NodeState
 from skills import (SkillRegistry, run_skill,
-                    compress_result, reset_compression_log,
+                    reset_compression_log,
                     compression_summary, count_downstream_readers,
-                    COMPRESSION_LOG)
+                    COMPRESSION_LOG, log_compression_entry)
 
 MAX_NODES = 60  # hard cap so a Planner loop cannot grow forever
 
@@ -165,6 +165,47 @@ class Graph:
                 self.g.add_edge(critic_nid, child_nid)
                 added.append(critic_nid)
 
+        # Token Miser auto-insertion: place a token_miser node between
+        # researcher/retriever and every downstream child. The miser
+        # compresses the raw output into dense fact bullets so downstream
+        # skills see smaller prompts. This appears as a visible node in
+        # the DAG just like Critic.
+        src_skill = self.g.nodes[src_nid]["skill"]
+        if src_skill in ("researcher", "retriever") and added:
+            for child_nid in list(added):
+                # Skip children that already have a Critic between them and
+                # the source (the Critic was inserted above).
+                preds = list(self.g.predecessors(child_nid))
+                if any(self.g.nodes[p].get("skill") == "critic" for p in preds):
+                    # Rewire the critic's input to read from miser instead.
+                    # The critic will run after the miser.
+                    for p in preds:
+                        if self.g.nodes[p].get("skill") == "critic":
+                            self.g.remove_edge(p, child_nid)
+                            # Insert miser between source and critic
+                            miser_nid = self.add_node(
+                                "token_miser", inputs=[src_nid],
+                                metadata={"source": src_nid, "target": child_nid},
+                            )
+                            self.g.add_edge(miser_nid, p)
+                            self.g.add_edge(p, child_nid)
+                            added.append(miser_nid)
+                            break
+                else:
+                    self.g.remove_edge(src_nid, child_nid)
+                    miser_nid = self.add_node(
+                        "token_miser", inputs=[src_nid],
+                        metadata={"source": src_nid, "target": child_nid},
+                    )
+                    self.g.add_edge(miser_nid, child_nid)
+                    added.append(miser_nid)
+                # Rewire the child's input references: n:source → n:miser
+                child_inputs = self.g.nodes[child_nid].get("inputs", [])
+                if src_nid in child_inputs:
+                    idx = child_inputs.index(src_nid)
+                    child_inputs[idx] = miser_nid
+                    self.g.nodes[child_nid]["inputs"] = child_inputs
+
         return added
 
 
@@ -250,11 +291,32 @@ class Executor:
                     started_at=time.time() - result.elapsed_s,
                     completed_at=time.time(),
                 ))
-                compressed_tag = graph.g.nodes[nid].get("compressed_output")
-                ctag = " [COMPRESSED]" if compressed_tag else ""
+                # Token Miser stats: log compression when token_miser node completes.
+                if result.success and graph.g.nodes[nid]["skill"] == "token_miser":
+                    inputs_list = graph.g.nodes[nid].get("inputs", [])
+                    raw_size = 0
+                    compressed_size = len(json.dumps(result.output, default=str))
+                    for inp in inputs_list:
+                        if inp.startswith("n:") and inp in graph.g.nodes:
+                            up = graph.g.nodes[inp].get("result")
+                            if isinstance(up, AgentResult):
+                                raw_size = len(json.dumps(up.output, default=str))
+                    if raw_size > 0:
+                        saved = raw_size - compressed_size
+                        pct = (saved / max(raw_size, 1)) * 100
+                        log_compression_entry({
+                            "node_id": nid,
+                            "skill": "token_miser",
+                            "input_chars": raw_size,
+                            "output_chars": compressed_size,
+                            "compression_pct": pct,
+                            "miser_cost_tokens": 0,
+                            "downstream_readers": 1,
+                        })
+                        print(f"  └─ Token Miser: {raw_size:,}→{compressed_size:,} chars ({pct:.0f}% reduction)")
                 print(f"[{nid}] {graph.g.nodes[nid]['skill']:18s} "
                       f"{graph.g.nodes[nid]['status']:8s} "
-                      f"({result.elapsed_s:.1f}s){ctag}"
+                      f"({result.elapsed_s:.1f}s)"
                       + (f"  err={result.error[:80]}" if result.error else ""))
 
                 if result.success:
@@ -335,12 +397,6 @@ class Executor:
             result = AgentResult(success=False, agent_name=skill_name,
                                  error=f"exception: {type(e).__name__}: {e}")
             prompt = "(exception before prompt-render)"
-
-        # Token Miser: compress large outputs from retrieval skills automatically.
-        if result.success and skill_name in ("researcher", "retriever"):
-            compressed = await compress_result(result.output, skill_name, nid, sid)
-            if compressed is not None:
-                graph.g.nodes[nid]["compressed_output"] = compressed
 
         return nid, result, prompt
 
