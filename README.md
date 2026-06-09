@@ -1,8 +1,313 @@
-# Multi-Agent DAG — Batch Run Results
+# Multi-Agent DAG — Growing-Graph Orchestrator
+
+A **multi-agent orchestration system** where each user query spawns a dynamic, growing DAG (Directed Acyclic Graph) of specialised AI skills. The graph is not pre-defined — it expands at runtime through five distinct mechanisms, enabling parallel research, automatic compression, code execution, critic evaluation, and error recovery without hard-coded workflows.
+
+---
+
+## Table of Contents
+
+- [Architecture Overview](#architecture-overview)
+- [Skill Catalog](#skill-catalog)
+- [How the DAG Grows at Runtime](#how-the-dag-grows-at-runtime)
+- [Token Miser — Automatic Compression](#token-miser--automatic-compression)
+- [Memory System](#memory-system)
+- [Error Recovery](#error-recovery)
+- [Project Structure](#project-structure)
+- [Gateway Integration](#gateway-integration)
+- [Getting Started](#getting-started)
+- [Batch Run Results](#batch-run-results)
+
+---
+
+## Architecture Overview
+
+The agent's execution loop is a **NetworkX DiGraph** (directed graph). Each node represents one skill invocation; edges carry typed `AgentResult` payloads between skills. The orchestrator (`flow.py`) runs the graph in topological order, dispatching ready nodes concurrently via `asyncio.gather`.
+
+### Key Design Principles
+
+- **No hard-coded workflows.** The Planner decomposes each query into a seed DAG, then the graph grows organically as skills emit dynamic successors.
+- **Tool-blindness contract.** Skills name other skills in their successors — never tools. The Planner names skills, not MCP endpoints.
+- **Per-skill configuration.** `agent_config.yaml` defines every skill's prompt, temperature, `max_tokens`, allowed tools, and behavioural flags (critic, internal_successors).
+- **Separation of concerns.** The orchestrator handles graph topology, concurrency, and persistence. Skills handle cognition. The gateway handles LLM routing and provider failover.
+- **Session persistence.** Every graph state is serialised to disk after each node completes, enabling crash recovery and session replay (`--resume` flag).
+
+```
+                         ┌──────────────────┐
+                         │   USER QUERY      │
+                         └────────┬─────────┘
+                                  │
+                         ┌────────▼─────────┐
+                         │    Planner (n:1)  │  ← Decomposes query into initial DAG
+                         └────────┬─────────┘
+                                  │
+                    ┌─────────────┼─────────────┐
+                    │             │              │
+              ┌─────▼────┐  ┌────▼─────┐  ┌─────▼────┐
+              │Researcher │  │Researcher │  │ Researcher│  ← Parallel workers
+              └─────┬────┘  └────┬──────┘  └─────┬────┘
+                    │            │                │
+              ┌─────▼────┐  ┌────▼─────┐  ┌─────▼────┐
+              │TokenMiser│  │TokenMiser│  │TokenMiser│  ← Auto-inserted compression
+              └─────┬────┘  └────┬──────┘  └─────┬────┘
+                    │            │                │
+                    └────────────┼────────────────┘
+                                 │
+                          ┌──────▼──────┐
+                          │  Formatter   │  ← Produces final answer
+                          └─────────────┘
+```
+
+---
+
+## Skill Catalog
+
+All skills are defined declaratively in [`code/agent_config.yaml`](code/agent_config.yaml). There is no Python class per skill — the orchestrator loads prompt templates and configuration from the YAML at startup.
+
+| Skill | Temperature | Max Tokens | Tools Allowed | Description |
+|---|---|---|---|---|
+| **Planner** | 0.4 | 1,500 | — | Decomposes the user query into the initial DAG; synthesises recovery subgraphs on node failure |
+| **Researcher** | 0.7 | 2,500 | `web_search`, `fetch_url` | Multi-step web research with normalised text outputs |
+| **Retriever** | 0.2 | 1,200 | `search_knowledge` | Vector search over FAISS-indexed knowledge base |
+| **Distiller** | 0.1 | 1,200 | — | Extracts structured fields from raw text or page content. Has `critic: true` — every outgoing edge gets a Critic inserted |
+| **Summariser** | 0.3 | 1,200 | — | Condenses long content into a short form |
+| **Critic** | 0.0 | 500 | — | Evaluates upstream node output; emits pass or fail with rationale. Deterministic (temperature=0) |
+| **Coder** | 0.2 | 1,500 | — | Generates modular, correct code. Auto-spawns `sandbox_executor` via `internal_successors` |
+| **Sandbox Executor** | 0.0 | 400 | — | Runs code from Coder in an isolated sandbox; returns stdout/stderr/exit code. Bypasses the LLM gateway entirely |
+| **Formatter** | 0.3 | 1,500 | — | Renders the final answer to the user. Conventional terminal node — its `output.final_answer` is returned by the executor |
+| **Token Miser** | 0.0 | 2,048 | — | Lossy-compression filter that strips noise from retrieval outputs before they reach downstream nodes |
+| **Browser** | 0.3 | 1,500 | — | *(Stub — reserved for future use)* |
+
+### Provider Pinning (via Gateway)
+
+The gateway's [`agent_routing.yaml`](gateway/agent_routing.yaml) maps each skill to a preferred LLM provider. Pins are preferences, not hard bindings — if a provider is in cooldown, the gateway falls back through the normal failover ladder.
+
+| Skill | Pinned Provider |
+|---|---|
+| Planner | Gemini |
+| Researcher | Gemini |
+| Distiller | Gemini |
+| Summariser | Gemini |
+| Critic | Groq |
+| Formatter | Gemini |
+| Retriever | GitHub Models |
+| Coder | Gemini |
+| Sandbox Executor | GitHub Models |
+| Browser | Gemini |
+
+---
+
+## How the DAG Grows at Runtime
+
+The graph starts with a single Planner node and expands through **five independent mechanisms**:
+
+### 1. Planner Seed Plan
+The Planner receives the user query and emits an initial set of successor nodes. For example, `"Find populations of London, Paris, Berlin"` produces three parallel Researcher nodes plus a Formatter.
+
+### 2. Dynamic Successors
+Any skill can emit successors in its JSON output via the `successors` field. This enables a Researcher to spawn additional sub-researchers, or the Planner to re-insert itself for recovery.
+
+### 3. Internal Successors (Static)
+Defined in `agent_config.yaml`. When a Coder node completes, `internal_successors: [sandbox_executor]` automatically adds a Sandbox Executor child — no code change needed.
+
+### 4. Critic Auto-Insertion
+Skills with `critic: true` (currently Distiller) automatically get a Critic node inserted on **every outgoing edge**. The child only runs after the Critic passes. If the Critic fails, the orchestrator triggers recovery (re-plan via Planner, capped at one retry per branch).
+
+### 5. Token Miser Auto-Insertion
+When a Researcher or Retriever node completes with a large output, the orchestrator inserts a Token Miser node between it and its downstream readers. This preserves the parent's raw output for any other consumers while giving the selected child a compressed version.
+
+---
+
+## Token Miser — Automatic Compression
+
+The Token Miser is a lossy-compression skill that automatically activates when a Researcher or Retriever produces output exceeding **600 characters**. It reduces token consumption by 40–65% while preserving factual content.
+
+**How it works:**
+1. The orchestrator detects a large output from Researcher/Retriever
+2. It creates a Token Miser node and rewires the edge: `Researcher → Miser → Downstream`
+3. The Miser calls a cheap LLM to compress the text
+4. Downstream nodes receive compressed input; the original is preserved on the graph node for any other consumers
+
+**Session-level statistics** are printed at the end of each run showing total characters saved, compression ratio, and estimated token savings.
+
+```
+────────────────────────────────────────────────────────────
+TOKEN MISER — SESSION SUMMARY
+────────────────────────────────────────────────────────────
+  Nodes compressed: 3
+  Total input chars: 2,777
+  Total output chars: 1,380
+  Overall compression: 50.3%
+  Gross chars saved (× downstream readers): 1,397
+  Est. token savings: ~349
+  Miser LLM cost (est. tokens): −0
+  Net estimated token savings: ~349
+────────────────────────────────────────────────────────────
+```
+
+---
+
+## Memory System
+
+Memory is read **once at session start** and the same ranked hits flow into every skill's prompt. This carries forward the Session 7 contract: every cognitive role can see what the agent already knows.
+
+- **FAISS vector index** over previously indexed documents and interactions
+- **Hits ranked** by relevance to the user query
+- **Up to 8 hits** surfaced per session (capped to keep prompts bounded)
+- Each hit includes: kind, descriptor, source, and a 2000-char preview of the chunk
+
+The system uses the gateway's `POST /v1/embed` endpoint (768-dim vectors via `nomic-embed-text` or `gemini-embedding-001`) for indexing and retrieval.
+
+---
+
+## Error Recovery
+
+When a node fails, the orchestrator consults the recovery module (`recovery.py`):
+
+1. **Critic fail** → if this is the first failure for this branch, the Planner is re-invoked with a failure report to produce a corrected subgraph. On the second failure, the branch is skipped and a warning is logged.
+2. **Skill failure** (e.g. tool error, parse error) → the Planner synthesises a recovery subgraph that re-tries with adjusted parameters.
+3. **Hard cap** — maximum 60 nodes per session prevents runaway Planner loops.
+
+---
+
+## Project Structure
+
+```
+multi-agent-dag/
+├── README.md                  ← This file
+├── .env.example               ← Environment variable template
+│
+├── code/                      ← Core orchestrator & skills
+│   ├── flow.py                ← Growing-graph executor (main loop)
+│   ├── skills.py              ← Skill registry, prompt rendering, tool dispatch
+│   ├── agent_config.yaml      ← Declarative skill definitions
+│   ├── perception.py          ← Agent perception layer (S7 orchestration)
+│   ├── decision.py            ← Decision-making layer
+│   ├── memory.py              ← Memory read/write for FAISS index
+│   ├── vector_index.py        ← FAISS vector index operations
+│   ├── schemas.py             ← Pydantic models (AgentResult, NodeState, etc.)
+│   ├── persistence.py         ← Session graph serialisation + replay
+│   ├── recovery.py            ← Failure handling (critic verdicts, re-planning)
+│   ├── artifacts.py           ← Artifact storage & retrieval
+│   ├── sandbox.py             ← Isolated Python sandbox for code execution
+│   ├── mcp_server.py          ← MCP server for tool execution
+│   ├── mcp_runner.py          ← Multi-turn tool-use loop
+│   ├── gateway.py             ← LLM gateway client
+│   ├── replay.py              ← Session replay visualisation
+│   ├── visualizer.py          ← Graph visualisation utilities
+│   ├── run_all.py             ← Batch runner (9 queries → README + logs)
+│   ├── pyproject.toml         ← Python project config
+│   ├── requirements.txt       ← Dependencies
+│   ├── usage.json             ← Usage tracking
+│   │
+│   ├── prompts/               ← System prompts per skill
+│   │   ├── planner.md
+│   │   ├── researcher.md
+│   │   ├── retriever.md
+│   │   ├── distiller.md
+│   │   ├── summariser.md
+│   │   ├── critic.md
+│   │   ├── coder.md
+│   │   ├── sandbox_executor.md
+│   │   ├── formatter.md
+│   │   ├── token_miser.md
+│   │   ├── browser.md
+│   │   └── ... (other prompts)
+│   │
+│   ├── sandbox/papers/        ← Reference papers for sandbox testing
+│   │   ├── attention.md
+│   │   ├── cot.md
+│   │   ├── dpo.md
+│   │   ├── lora.md
+│   │   └── react.md
+│   │
+│   └── tests/
+│       └── test_recovery.py   ← Recovery module tests
+│
+├── gateway/                   ← LLM Gateway V7 + V8 agent routing
+│   ├── main.py                ← FastAPI app with /v1/chat, /v1/embed
+│   ├── providers.py           ← Provider adapters (Gemini, Groq, etc.)
+│   ├── router.py              ← Router pool + worker pool with rate limiting
+│   ├── client.py              ← Python SDK (LLM class)
+│   ├── agent_routing.yaml     ← Skill → provider pinning
+│   ├── cache.py               ← Gemini caching support
+│   ├── db.py                  ← SQLite call logging
+│   ├── embedders.py           ← Embedding providers (Ollama, Gemini)
+│   ├── schemas.py             ← Pydantic models
+│   ├── README.md              ← Gateway documentation
+│   ├── requirements.txt
+│   ├── run.sh                 ← Startup script
+│   └── static/
+│       ├── dashboard.html     ← Live dashboard
+│       └── help.html          ← Help page
+│
+└── run_logs/                  ← Timestamped batch run logs
+    └── run_20260610_011246.log
+```
+
+---
+
+## Gateway Integration
+
+The system connects to the **LLM Gateway V7** (port 8107) for all LLM calls and the **V3 router pool** (port 8101) for cognitive-layer routing. The gateway provides:
+
+- **Seven worker providers:** Ollama, Gemini, NVIDIA NIM, Groq, Cerebras, OpenRouter, GitHub Models
+- **Four-router pool** for classification (Cerebras, Groq, NVIDIA, GitHub) that routes requests to the appropriate worker tier (TINY / LARGE)
+- **Agent routing** — per-skill provider pinning via `agent_routing.yaml`
+- **Embedding service** — `POST /v1/embed` with 768-dim vectors (Ollama `nomic-embed-text` primary, Gemini `gemini-embedding-001` fallback)
+- **Session-aware caching** via Gemini SHA-256 explicit cache
+- **Live dashboard** at `http://localhost:8101`
+
+Skills call the gateway through two paths:
+- **Text-only skills** (Planner, Formatter, Critic, Distiller) → direct `LLM().chat()`
+- **Tool-using skills** (Researcher, Retriever) → `mcp_runner.run_with_tools()` multi-turn loop
+- **Sandbox Executor** → bypasses the gateway entirely, calls `sandbox.run_python()` directly
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/) (fast Python package installer)
+- LLM Gateway running on port 8107 (with V3 routing on 8101)
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/kuralamuthan300/multi-agent-dag.git
+cd multi-agent-dag
+
+# Set up environment
+cp .env.example .env
+# Edit .env with your API keys
+
+# Install dependencies
+cd code && uv sync
+cd ../gateway && uv sync
+```
+
+### Running a Single Query
+
+```bash
+cd code
+uv run python3 flow.py "Say hello."
+
+# Resume a previous session
+uv run python3 flow.py --resume <session_id>
+
+# Run all 9 benchmark queries (generates README + logs)
+uv run python3 run_all.py
+```
+
+The first run executes a single Planner → Formatter flow. More complex queries automatically build larger graphs with parallel researchers, token compression, code execution, and critic evaluation.
+
+---
+
+## Batch Run Results
 
 Batch executed on **2026-06-10 01:18:15**
-
-## Summary
 
 | # | Label | Purpose | Status | Time |
 |---|-------|---------|--------|------|
@@ -18,7 +323,7 @@ Batch executed on **2026-06-10 01:18:15**
 
 **9/9 queries succeeded.**
 
-## Full Logs
+### Full Logs
 
 Full raw logs saved to: [`/Users/kural/Documents/EAGv3/WEEK8/multi-agent-dag/run_logs/run_20260610_011246.log`](/Users/kural/Documents/EAGv3/WEEK8/multi-agent-dag/run_logs/run_20260610_011246.log)
 
@@ -67,9 +372,9 @@ session s8-748541fe  ─  query: Fetch https://en.wikipedia.org/wiki/Claude_Shan
 [n:4] token_miser        complete (1.4s)
 [n:3] formatter          complete (2.0s)
 
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
 TOKEN MISER — SESSION SUMMARY
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
   Nodes compressed: 1
   Total input chars: 763
   Total output chars: 423
@@ -78,7 +383,7 @@ TOKEN MISER — SESSION SUMMARY
   Est. token savings: ~85
   Miser LLM cost (est. tokens): −0
   Net estimated token savings: ~85
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
 
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: Claude Shannon was born on April 30, 1916, and passed away on February 24, 2001. His three key contributions to information theory include: 
@@ -145,9 +450,9 @@ session s8-d5d708b9  ─  query: Find the populations of London, Paris, Berlin a
 [n:8] token_miser        complete (15.8s)
 [n:5] formatter          complete (1.1s)
 
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
 TOKEN MISER — SESSION SUMMARY
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
   Nodes compressed: 3
   Total input chars: 2,777
   Total output chars: 1,380
@@ -156,7 +461,7 @@ TOKEN MISER — SESSION SUMMARY
   Est. token savings: ~349
   Miser LLM cost (est. tokens): −0
   Net estimated token savings: ~349
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
 
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: Based on the provided data, the populations for the city proper of each city are as follows: London has approximately 9.1 million residents, Berlin has approximately 3.9 million, and Paris has approximately 2.05 million. Comparing these figures, Berlin and Paris are the two cities closest in size, with a difference of approximately 1.85 million, compared to the much larger gaps between London and the other two cities.
@@ -316,9 +621,9 @@ session s8-55daf4f6  ─  query: For Lagos, Cairo, and Kinshasa, find current po
 [n:8] token_miser        complete (1.5s)
 [n:5] formatter          complete (1.3s)
 
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
 TOKEN MISER — SESSION SUMMARY
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
   Nodes compressed: 3
   Total input chars: 1,995
   Total output chars: 1,029
@@ -327,7 +632,7 @@ TOKEN MISER — SESSION SUMMARY
   Est. token savings: ~241
   Miser LLM cost (est. tokens): −0
   Net estimated token savings: ~241
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
 
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: Based on 2026 estimates, here is the population and growth rate data for the three cities:
@@ -370,7 +675,7 @@ Kinshasa is currently growing the fastest among the three cities. Sources: Macro
                              h=current%20population%20and%20annual%20           
                              growth%20rate%20of%20Cairo%202024%202025           
                               200                                               
-[06/10/26 01:14:57] INFO     response:                                lib.rs:444
+                    INFO     response:                                lib.rs:444
                              https://grokipedia.com/api/typeahead?que           
                              ry=current+population+and+annual+growth+           
                              rate+of+Cairo+2024+2025&limit=1 200                
@@ -486,9 +791,9 @@ session s8-70568b94  ─  query: Find the populations of London, Paris, Berlin a
 [n:8] token_miser        complete (20.6s)
 [n:5] formatter          complete (1.2s)
 
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
 TOKEN MISER — SESSION SUMMARY
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
   Nodes compressed: 3
   Total input chars: 1,966
   Total output chars: 918
@@ -497,7 +802,7 @@ TOKEN MISER — SESSION SUMMARY
   Est. token savings: ~262
   Miser LLM cost (est. tokens): −0
   Net estimated token savings: ~262
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
 
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: The current populations for the three cities are approximately as follows: London (Greater London) has about 9.8 million residents, Paris (city proper) has about 2.1 million residents, and Berlin has about 3.87 million residents. Comparing these figures, Berlin and Paris are the two cities closest in size, with a difference of approximately 1.77 million, whereas London is significantly larger than both.
@@ -638,9 +943,9 @@ session s8-a8b09898  ─  query: Fetch the Wikipedia article on Claude Shannon a
 [n:3] distiller          complete (0.7s)
 [n:4] formatter          complete (4.2s)
 
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
 TOKEN MISER — SESSION SUMMARY
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
   Nodes compressed: 1
   Total input chars: 361
   Total output chars: 151
@@ -649,7 +954,7 @@ TOKEN MISER — SESSION SUMMARY
   Est. token savings: ~52
   Miser LLM cost (est. tokens): −0
   Net estimated token savings: ~52
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
 
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: I am sorry, but the requested information regarding Claude Shannon's birth date, death date, and contributions to information theory could not be found in the available knowledge base.
@@ -741,9 +1046,9 @@ session s8-5c73e499  ─  query: For Lagos, Cairo, and Kinshasa, find current po
 [n:8] token_miser        complete (3.5s)
 [n:5] formatter          complete (1.0s)
 
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
 TOKEN MISER — SESSION SUMMARY
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
   Nodes compressed: 3
   Total input chars: 2,317
   Total output chars: 1,114
@@ -752,7 +1057,7 @@ TOKEN MISER — SESSION SUMMARY
   Est. token savings: ~300
   Miser LLM cost (est. tokens): −0
   Net estimated token savings: ~300
-────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
 
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: Based on current estimates for 2025-2026, here is the population and growth data for the three cities:
@@ -860,4 +1165,3 @@ https://www.macrotrends.net/global-metrics/cities/20853/kinshasa/population
 | ✓ | ⏱: 0.02s 
 [COMPLETE] ● https://worldpopulationreview.com/cities/egypt/cairo               
 | ✓ | ⏱: 1.18s
-```
