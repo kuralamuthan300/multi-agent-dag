@@ -23,6 +23,5 @@ gateway/usage.json
 .DS_Store
 
 # Artifact files
-*/index_ids.json
-*/memory.json
-*/index.faiss
+*/state/*
+code/state/
