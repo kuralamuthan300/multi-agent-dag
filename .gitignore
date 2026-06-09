@@ -21,3 +21,8 @@ gateway/usage.json
 .vscode/
 .idea/
 .DS_Store
+
+# Artifact files
+*/index_ids.json
+*/memory.json
+*/index.faiss
