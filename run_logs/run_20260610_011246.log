@@ -1,38 +1,15 @@
-# Multi-Agent DAG — Batch Run Results
+==============================================================================
+MULTI-AGENT DAG — BATCH RUN LOG
+Started:  2026-06-10 01:18:15
+==============================================================================
 
-Batch executed on **2026-06-10 01:18:15**
+──────────────────────────────────────────────────────────────────────────────
+QUERY #1  [arg1-hello]  ✓
+Query:    Say hello.
+Elapsed:  10.1s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-## Summary
-
-| # | Label | Purpose | Status | Time |
-|---|-------|---------|--------|------|
-| 1 | `arg1-hello` | Basic hello-world test | ✅ | 10.1s |
-| 2 | `arg2-shannon` | Fetch Wikipedia article (researcher web fetch) | ✅ | 24.5s |
-| 3 | `arg3-populations` | Multi-city research (parallel researchers) | ✅ | 67.3s |
-| 4 | `arg4-nonexistent` | Error handling (read non-existent file) | ✅ | 11.8s |
-| 5 | `arg5-africa` | Multi-city Africa research (parallel researchers) | ✅ | 50.2s |
-| 6 | `skill-parallel` | Parallel processing — multiple researchers spawned by Planner | ✅ | 74.6s |
-| 7 | `skill-critic` | Critic skill — Researcher → Distiller (critic: true) → Critic auto-inserts | ✅ | 26.4s |
-| 8 | `skill-coder` | Coder skill + SandboxExecutor — Kadane's algorithm | ✅ | 17.0s |
-| 9 | `skill-token-miser` | Token Miser — large research output triggers auto-compression | ✅ | 47.1s |
-
-**9/9 queries succeeded.**
-
-## Full Logs
-
-Full raw logs saved to: [`/Users/kural/Documents/EAGv3/WEEK8/multi-agent-dag/run_logs/run_20260610_011246.log`](/Users/kural/Documents/EAGv3/WEEK8/multi-agent-dag/run_logs/run_20260610_011246.log)
-
----
-
-### Query #1: arg1-hello ✅
-
-**Purpose:** Basic hello-world test
-
-**Query:** `Say hello.`
-
-**Elapsed:** 10.1s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-399dcb1a  ─  query: Say hello.
 ══════════════════════════════════════════════════════════════════════════════
@@ -43,19 +20,14 @@ session s8-399dcb1a  ─  query: Say hello.
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: Hello! How can I help you today?
 ══════════════════════════════════════════════════════════════════════════════
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #2  [arg2-shannon]  ✓
+Query:    Fetch https://en.wikipedia.org/wiki/Claude_Shannon and tell me his birth date, death date, and three key contributions to information theory.
+Elapsed:  24.5s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #2: arg2-shannon ✅
-
-**Purpose:** Fetch Wikipedia article (researcher web fetch)
-
-**Query:** `Fetch https://en.wikipedia.org/wiki/Claude_Shannon and tell me his birth date, death date, and three key contributions to information theory.`
-
-**Elapsed:** 24.5s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-748541fe  ─  query: Fetch https://en.wikipedia.org/wiki/Claude_Shannon and tell me his birth date, death date, and three key contributions to information theory.
 ══════════════════════════════════════════════════════════════════════════════
@@ -89,10 +61,8 @@ FINAL: Claude Shannon was born on April 30, 1916, and passed away on February 24
 
 Source: https://en.wikipedia.org/wiki/Claude_Shannon
 ══════════════════════════════════════════════════════════════════════════════
-```
 
-**stderr:**
-```
+── stderr ──
 [06/10/26 01:13:08] INFO     Processing request of type            server.py:727
                              CallToolRequest                                    
 [INIT].... → Crawl4AI 0.8.6 
@@ -113,19 +83,14 @@ Source: https://en.wikipedia.org/wiki/Claude_Shannon
 | ✓ | ⏱: 0.13s 
 [COMPLETE] ● https://en.wikipedia.org/api/rest_v1/page/html/Claude_Shannon      
 | ✓ | ⏱: 2.07s
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #3  [arg3-populations]  ✓
+Query:    Find the populations of London, Paris, Berlin and tell me which two are closest in size.
+Elapsed:  67.3s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #3: arg3-populations ✅
-
-**Purpose:** Multi-city research (parallel researchers)
-
-**Query:** `Find the populations of London, Paris, Berlin and tell me which two are closest in size.`
-
-**Elapsed:** 67.3s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-d5d708b9  ─  query: Find the populations of London, Paris, Berlin and tell me which two are closest in size.
 ══════════════════════════════════════════════════════════════════════════════
@@ -161,10 +126,8 @@ TOKEN MISER — SESSION SUMMARY
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: Based on the provided data, the populations for the city proper of each city are as follows: London has approximately 9.1 million residents, Berlin has approximately 3.9 million, and Paris has approximately 2.05 million. Comparing these figures, Berlin and Paris are the two cities closest in size, with a difference of approximately 1.85 million, compared to the much larger gaps between London and the other two cities.
 ══════════════════════════════════════════════════════════════════════════════
-```
 
-**stderr:**
-```
+── stderr ──
 [06/10/26 01:13:32] INFO     Processing request of type            server.py:727
                              CallToolRequest                                    
 [06/10/26 01:13:33] INFO     response:                                lib.rs:444
@@ -261,19 +224,14 @@ mographic-data/      | ✓ | ⏱: 2.80s
 | ✓ | ⏱: 0.00s 
 [COMPLETE] ● https://www.insee.fr/en/statistiques/serie/001760155               
 | ✓ | ⏱: 6.03s
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #4  [arg4-nonexistent]  ✓
+Query:    Read /nonexistent/path.txt and tell me what's in it.
+Elapsed:  11.8s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #4: arg4-nonexistent ✅
-
-**Purpose:** Error handling (read non-existent file)
-
-**Query:** `Read /nonexistent/path.txt and tell me what's in it.`
-
-**Elapsed:** 11.8s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-6c310449  ─  query: Read /nonexistent/path.txt and tell me what's in it.
 ══════════════════════════════════════════════════════════════════════════════
@@ -284,19 +242,14 @@ session s8-6c310449  ─  query: Read /nonexistent/path.txt and tell me what's i
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: I am unable to read the file at /nonexistent/path.txt because it does not exist.
 ══════════════════════════════════════════════════════════════════════════════
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #5  [arg5-africa]  ✓
+Query:    For Lagos, Cairo, and Kinshasa, find current populations and growth rates and tell me which is growing fastest.
+Elapsed:  50.2s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #5: arg5-africa ✅
-
-**Purpose:** Multi-city Africa research (parallel researchers)
-
-**Query:** `For Lagos, Cairo, and Kinshasa, find current populations and growth rates and tell me which is growing fastest.`
-
-**Elapsed:** 50.2s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-55daf4f6  ─  query: For Lagos, Cairo, and Kinshasa, find current populations and growth rates and tell me which is growing fastest.
 ══════════════════════════════════════════════════════════════════════════════
@@ -338,10 +291,8 @@ FINAL: Based on 2026 estimates, here is the population and growth rate data for 
 
 Kinshasa is currently growing the fastest among the three cities. Sources: Macrotrends (Lagos, Cairo, Kinshasa).
 ══════════════════════════════════════════════════════════════════════════════
-```
 
-**stderr:**
-```
+── stderr ──
 [06/10/26 01:14:52] INFO     Processing request of type            server.py:727
                              CallToolRequest                                    
                     INFO     response:                                lib.rs:444
@@ -454,19 +405,14 @@ https://www.macrotrends.net/global-metrics/cities/20853/kinshasa/population
 [COMPLETE] ● 
 https://www.macrotrends.net/global-metrics/cities/20853/kinshasa/population     
 | ✓ | ⏱: 1.18s
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #6  [skill-parallel]  ✓
+Query:    Find the populations of London, Paris, Berlin and tell me which two are closest in size.
+Elapsed:  74.6s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #6: skill-parallel ✅
-
-**Purpose:** Parallel processing — multiple researchers spawned by Planner
-
-**Query:** `Find the populations of London, Paris, Berlin and tell me which two are closest in size.`
-
-**Elapsed:** 74.6s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-70568b94  ─  query: Find the populations of London, Paris, Berlin and tell me which two are closest in size.
 ══════════════════════════════════════════════════════════════════════════════
@@ -502,10 +448,8 @@ TOKEN MISER — SESSION SUMMARY
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: The current populations for the three cities are approximately as follows: London (Greater London) has about 9.8 million residents, Paris (city proper) has about 2.1 million residents, and Berlin has about 3.87 million residents. Comparing these figures, Berlin and Paris are the two cities closest in size, with a difference of approximately 1.77 million, whereas London is significantly larger than both.
 ══════════════════════════════════════════════════════════════════════════════
-```
 
-**stderr:**
-```
+── stderr ──
 [06/10/26 01:15:41] INFO     Processing request of type            server.py:727
                              CallToolRequest                                    
 [06/10/26 01:15:42] INFO     response:                                lib.rs:444
@@ -613,19 +557,14 @@ FINAL: The current populations for the three cities are approximately as follows
 | ✓ | ⏱: 0.30s 
 [COMPLETE] ● https://en.wikipedia.org/wiki/Demographics_of_London               
 | ✓ | ⏱: 1.58s
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #7  [skill-critic]  ✓
+Query:    Fetch the Wikipedia article on Claude Shannon and extract his birth date, death date, and three key contributions to information theory as structured fields. Present them in a clean format.
+Elapsed:  26.4s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #7: skill-critic ✅
-
-**Purpose:** Critic skill — Researcher → Distiller (critic: true) → Critic auto-inserts
-
-**Query:** `Fetch the Wikipedia article on Claude Shannon and extract his birth date, death date, and three key contributions to information theory as structured fields. Present them in a clean format.`
-
-**Elapsed:** 26.4s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-a8b09898  ─  query: Fetch the Wikipedia article on Claude Shannon and extract his birth date, death date, and three key contributions to information theory as structured fields. Present them in a clean format.
 ══════════════════════════════════════════════════════════════════════════════
@@ -654,10 +593,8 @@ TOKEN MISER — SESSION SUMMARY
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: I am sorry, but the requested information regarding Claude Shannon's birth date, death date, and contributions to information theory could not be found in the available knowledge base.
 ══════════════════════════════════════════════════════════════════════════════
-```
 
-**stderr:**
-```
+── stderr ──
 [06/10/26 01:16:56] INFO     Processing request of type            server.py:727
                              CallToolRequest                                    
                     INFO     HTTP Request: GET                   _client.py:1025
@@ -668,19 +605,14 @@ FINAL: I am sorry, but the requested information regarding Claude Shannon's birt
                              "HTTP/1.1 200 OK"                                  
                     INFO     Processing request of type            server.py:727
                              ListToolsRequest
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #8  [skill-coder]  ✓
+Query:    Write a Python function implementing Kadane's algorithm to find the maximum sum subarray in an array that may contain negative numbers. Then test it on the input [-2, 1, -3, 4, -1, 2, 1, -5, 4] and run it in the sandbox to show the result.
+Elapsed:  17.0s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #8: skill-coder ✅
-
-**Purpose:** Coder skill + SandboxExecutor — Kadane's algorithm
-
-**Query:** `Write a Python function implementing Kadane's algorithm to find the maximum sum subarray in an array that may contain negative numbers. Then test it on the input [-2, 1, -3, 4, -1, 2, 1, -5, 4] and run it in the sandbox to show the result.`
-
-**Elapsed:** 17.0s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-f26b52ab  ─  query: Write a Python function implementing Kadane's algorithm to find the maximum sum subarray in an array that may contain negative numbers. Then test it on the input [-2, 1, -3, 4, -1, 2, 1, -5, 4] and run it in the sandbox to show the result.
 ══════════════════════════════════════════════════════════════════════════════
@@ -709,19 +641,14 @@ print(kadane(nums))
 
 When executed with the input [-2, 1, -3, 4, -1, 2, 1, -5, 4], the function returns 6, which corres
 ══════════════════════════════════════════════════════════════════════════════
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #9  [skill-token-miser]  ✓
+Query:    For Lagos, Cairo, and Kinshasa, find current populations and growth rates and tell me which is growing fastest. Be thorough in your research.
+Elapsed:  47.1s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #9: skill-token-miser ✅
-
-**Purpose:** Token Miser — large research output triggers auto-compression
-
-**Query:** `For Lagos, Cairo, and Kinshasa, find current populations and growth rates and tell me which is growing fastest. Be thorough in your research.`
-
-**Elapsed:** 47.1s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-5c73e499  ─  query: For Lagos, Cairo, and Kinshasa, find current populations and growth rates and tell me which is growing fastest. Be thorough in your research.
 ══════════════════════════════════════════════════════════════════════════════
@@ -770,10 +697,8 @@ Sources:
 - Cairo: World Population Review
 - Kinshasa: Macrotrends
 ══════════════════════════════════════════════════════════════════════════════
-```
 
-**stderr:**
-```
+── stderr ──
 [06/10/26 01:17:39] INFO     Processing request of type            server.py:727
                              CallToolRequest                                    
 [06/10/26 01:17:40] INFO     response:                                lib.rs:444
@@ -860,4 +785,7 @@ https://www.macrotrends.net/global-metrics/cities/20853/kinshasa/population
 | ✓ | ⏱: 0.02s 
 [COMPLETE] ● https://worldpopulationreview.com/cities/egypt/cairo               
 | ✓ | ⏱: 1.18s
-```
+
+==============================================================================
+END OF LOG
+==============================================================================
