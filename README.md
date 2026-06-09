@@ -985,7 +985,7 @@ FINAL: I am sorry, but the requested information regarding Claude Shannon's birt
 
 **Elapsed:** 17.0s  |  **Exit code:** 0
 
-```
+~~~
 ══════════════════════════════════════════════════════════════════════════════
 session s8-f26b52ab  ─  query: Write a Python function implementing Kadane's algorithm to find the maximum sum subarray in an array that may contain negative numbers. Then test it on the input [-2, 1, -3, 4, -1, 2, 1, -5, 4] and run it in the sandbox to show the result.
 ══════════════════════════════════════════════════════════════════════════════
@@ -1014,7 +1014,7 @@ print(kadane(nums))
 
 When executed with the input [-2, 1, -3, 4, -1, 2, 1, -5, 4], the function returns 6, which corres
 ══════════════════════════════════════════════════════════════════════════════
-```
+~~~
 
 ---
 
