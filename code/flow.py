@@ -250,9 +250,11 @@ class Executor:
                     started_at=time.time() - result.elapsed_s,
                     completed_at=time.time(),
                 ))
+                compressed_tag = graph.g.nodes[nid].get("compressed_output")
+                ctag = " [COMPRESSED]" if compressed_tag else ""
                 print(f"[{nid}] {graph.g.nodes[nid]['skill']:18s} "
                       f"{graph.g.nodes[nid]['status']:8s} "
-                      f"({result.elapsed_s:.1f}s)"
+                      f"({result.elapsed_s:.1f}s){ctag}"
                       + (f"  err={result.error[:80]}" if result.error else ""))
 
                 if result.success:
