@@ -43,6 +43,7 @@ The code you write runs in a subprocess sandbox (`code/sandbox.py`). Follow thes
 5. **Handle edge cases gracefully.** Guard against division by zero, empty inputs, type mismatches, etc. If the input data is malformed or missing, print an explicit error message rather than crashing.
 6. **Be deterministic.** If the task involves randomness, set a fixed seed (`random.seed(0)`) so the output is reproducible.
 7. **Prefer simple data structures.** Use `dict`, `list`, `int`, `float`, `str` — not custom classes or complex object serialisation. The Formatter downstream needs plain-text or JSON-serialisable output.
+8. **No comments or unnecessary formatting.** Every comment, docstring, blank line, or decorative formatting in your code consumes tokens in the prompt. Produce only the minimal code that does the job — no explanations, no `#` comments, no blank separator lines.
 
 ---
 

@@ -12,17 +12,18 @@ logger = logging.getLogger(__name__)
 
 # Light-mode specific visual constraints
 THEME_CONFIG = {
-    "background": "#F8F9FA",       # Off-white / Soft Light Gray
-    "edge_color": "#7F8C8D",       # Slate Gray for connecting lines
-    "text_color": "#2C3E50",       # Dark Charcoal for high-contrast legibility
-    "border_color": "#BDC3C7",     # Muted Silver for node outlines
-    "font_size": 8,
-    "node_base_size": 7500,        # Optimized size for multi-line telemetry text
+    "background": "#F8F9FA",       
+    "edge_color": "#7F8C8D",       
+    "text_color": "#2C3E50",       
+    "border_color": "#BDC3C7",     
+    "font_size": 9,
 }
 
-# Professional, clean pastel palette optimized for light backdrops
+# Professional, clean pastel palette
 SKILL_PALETTE = {
-    "planner": "#FADBD8",     # Soft Pastel Red/Pink
+    "planner": "#FADBD8",     # Soft Pastel Red
+    "coder": "#FDEBD0",       # Soft Pastel Orange
+    "sandbox_executor": "#E8DAEF", # Soft Pastel Purple
     "researcher": "#D4E6F1",  # Soft Pastel Blue
     "formatter": "#D5F5E3",   # Soft Pastel Green
     "unknown": "#E5E7E9"      # Light Neutral Gray
@@ -52,14 +53,10 @@ class GraphVisualizer:
                 continue
 
             skill = node.get('skill', 'unknown')
-            status = node.get('status', 'unknown')
-            
-            # Safe extraction of metadata dictionary
             metadata = node.get('metadata')
             if not isinstance(metadata, dict):
                 metadata = {}
                 
-            # Strip whitespace to catch completely empty string labels safely
             label_tag = str(metadata.get('label', '')).strip()
             
             # Explicit, deep payload dictionary unpacking for metrics
@@ -67,23 +64,20 @@ class GraphVisualizer:
             elapsed = result_block.get('elapsed_s', 0.0) if isinstance(result_block, dict) else 0.0
             provider = result_block.get('provider', 'N/A') if isinstance(result_block, dict) else 'N/A'
 
-            # Build unified token label with clean status indicators
-            status_symbol = "🔵" if status == "complete" else "⚪"
+            # Build clean text tokens without emojis to prevent [] font decoding errors
+            display_tokens = [f"[{skill.upper()}]"]
             
-            # Core Node Identification header
-            node_header = f"{status_symbol} {skill.upper()}"
-            
-            # FIX: Structural assignment rule to prevent trailing/empty brackets []
             if label_tag:
-                identity_line = f"[{label_tag}]"
+                display_tokens.append(f"Task: {label_tag}")
             else:
-                identity_line = f"ID: {node_id}"
+                display_tokens.append(f"ID: {node_id}")
                 
-            display_tokens = [node_header, identity_line]
-                
-            # Append execution metric line only if a valid runtime duration exists
             if elapsed > 0:
-                display_tokens.append(f"⏱️ {elapsed:.2f}s | {provider}")
+                # Omit 'provider' if it is empty or N/A to keep text clean
+                if provider and provider != 'N/A':
+                    display_tokens.append(f"Time: {elapsed:.2f}s | {provider}")
+                else:
+                    display_tokens.append(f"Time: {elapsed:.2f}s")
 
             G.add_node(
                 node_id,
@@ -100,28 +94,25 @@ class GraphVisualizer:
         return G
 
     def compute_dynamic_layout(self, G: nx.DiGraph) -> Dict[Any, Tuple[float, float]]:
-        """Calculates structural layout positions using dynamic scaling metrics."""
+        """Calculates a left-to-right hierarchical flow."""
         try:
             # Assign structural execution layers
             for layer_idx, layer_nodes in enumerate(nx.topological_generations(G)):
                 for node in layer_nodes:
                     G.nodes[node]["layer"] = layer_idx
             
-            pos = nx.multipartite_layout(G, subset_key="layer", align="horizontal")
+            # align="vertical" forces nodes in the same layer to stack vertically, 
+            # creating distinct vertical columns that flow left-to-right.
+            pos = nx.multipartite_layout(G, subset_key="layer", align="vertical")
             
-            # Prevent visual collision by adjusting scale based on node counts
-            layer_counts = [G.nodes[n].get('layer', 0) for n in G.nodes]
-            max_density = max(layer_counts.count(i) for i in set(layer_counts)) if layer_counts else 1
-            
-            # Stretch aspect ratio to prevent labels from bleeding together
-            horizontal_factor = max(2.2, max_density * 0.45)
+            # Stretch the X-axis mapping to ensure columns have wide breathing room
             for node in pos:
-                pos[node][0] *= horizontal_factor
+                pos[node][0] *= 2.5 
             return pos
 
         except nx.NetworkXUnfeasible:
-            logger.warning("Cyclic pipeline detected. Reverting calculation to fallback spring geometry.")
-            return nx.spring_layout(G, k=2.0 / (len(G.nodes) ** 0.5), seed=42)
+            logger.warning("Cyclic pipeline detected. Reverting to fallback spring geometry.")
+            return nx.spring_layout(G, seed=42)
 
     def render(self, G: nx.DiGraph, execution_title: str, block: bool = True) -> None:
         """Renders an interactive canvas UI built for asynchronous pipelines."""
@@ -133,31 +124,39 @@ class GraphVisualizer:
         ax.set_facecolor(self.theme["background"])
 
         pos = self.compute_dynamic_layout(G)
-        labels = nx.get_node_attributes(G, 'label')
-        colors = [node_attr['color'] for _, node_attr in G.nodes(data=True)]
 
-        # Render connection channels using clean dark gray lines and larger arrows
+        # Draw connecting edges underneath nodes (zorder=1)
         nx.draw_networkx_edges(
             G, pos, ax=ax,
             arrowstyle="-|>", arrowsize=20,
-            edge_color=self.theme["edge_color"], width=1.8,
-            connectionstyle="arc3,rad=0.08"
+            edge_color=self.theme["edge_color"], width=2.0,
+            connectionstyle="arc3,rad=0.1",
+            node_size=4000, # Pad the arrow end so it stops gracefully before the text box
         )
 
-        # Render primary nodes with crisp borders
-        nx.draw_networkx_nodes(
-            G, pos, ax=ax,
-            node_color=colors, node_size=self.theme["node_base_size"],
-            node_shape="s", alpha=1.0,
-            edgecolors=self.theme["border_color"], linewidths=1.5
-        )
-
-        # Inject high-contrast dark text layers on top of the pastel nodes
-        nx.draw_networkx_labels(
-            G, pos, labels=labels,
-            font_size=self.theme["font_size"], font_weight='bold',
-            font_color=self.theme["text_color"], ax=ax
-        )
+        # Draw nodes using dynamic Matplotlib text boxes instead of standard NetworkX nodes.
+        # This forces the box to perfectly wrap around the text length.
+        for node, (x, y) in pos.items():
+            color = G.nodes[node]['color']
+            label = G.nodes[node]['label']
+            
+            bbox_props = dict(
+                boxstyle="round,pad=0.8", 
+                fc=color, 
+                ec=self.theme["border_color"], 
+                lw=1.5, 
+                alpha=0.95
+            )
+            
+            ax.text(
+                x, y, label, 
+                ha='center', va='center',
+                fontsize=self.theme["font_size"], 
+                color=self.theme["text_color"],
+                fontweight='bold', 
+                bbox=bbox_props, 
+                zorder=3
+            )
 
         plt.title(execution_title, fontsize=16, color=self.theme["text_color"], pad=20, fontweight='bold')
         
@@ -167,7 +166,6 @@ class GraphVisualizer:
 
         plt.margins(0.15)
         plt.tight_layout()
-        
         plt.show(block=block)
 
 def main():
