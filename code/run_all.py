@@ -48,13 +48,13 @@ QUERIES = [
     # ── skill-specific ──
     {
         "id": "skill-parallel",
-        "purpose": "Parallel processing — multiple researchers spawned by Planner",
-        "query": "Find the populations of London, Paris, Berlin and tell me which two are closest in size."
+        "purpose": "Parallel processing — multiple financial/tech queries spawned by Planner",
+        "query": "Find the current market capitalization of Apple, Microsoft, and Google (Alphabet), and tell me which company has the highest market cap and by how much it leads the second-place company."
     },
     {
         "id": "skill-critic",
-        "purpose": "Critic skill — Researcher → Distiller (critic: true) → Critic auto-inserts",
-        "query": "Fetch the Wikipedia article on Claude Shannon and extract his birth date, death date, and three key contributions to information theory as structured fields. Present them in a clean format."
+        "purpose": "Critic skill — Researcher fetches → Critic fact-checks → Distiller formats structured output",
+        "query": "Fetch the Wikipedia article on the Pyramids of Giza and extract: who built them, when were they built, and how long did it take to construct the Great Pyramid. Also investigate the claim that extraterrestrials built the pyramids — present any evidence for or against this, with sources."
     },
     {
         "id": "skill-coder",
@@ -63,8 +63,8 @@ QUERIES = [
     },
     {
         "id": "skill-token-miser",
-        "purpose": "Token Miser — large research output triggers auto-compression",
-        "query": "For Lagos, Cairo, and Kinshasa, find current populations and growth rates and tell me which is growing fastest. Be thorough in your research."
+        "purpose": "Token Miser — large Wikipedia article triggers auto-compression",
+        "query": "Fetch the Wikipedia article on the Solar System and summarise its contents covering: the Sun, all eight planets, the asteroid belt, Kuiper belt, and Oort cloud. Provide key facts about each celestial body including size, distance from Sun, orbital period, and unique characteristics. Be thorough and use detailed descriptions."
     },
 ]
 

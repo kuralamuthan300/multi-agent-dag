@@ -1,38 +1,15 @@
-# Multi-Agent DAG — Batch Run Results
+==============================================================================
+MULTI-AGENT DAG — BATCH RUN LOG
+Started:  2026-06-10 22:53:13
+==============================================================================
 
-Batch executed on **2026-06-10 22:53:13**
+──────────────────────────────────────────────────────────────────────────────
+QUERY #1  [arg1-hello]  ✓
+Query:    Say hello.
+Elapsed:  10.9s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-## Summary
-
-| # | Label | Purpose | Status | Time |
-|---|-------|---------|--------|------|
-| 1 | `arg1-hello` | Basic hello-world test | ✅ | 10.9s |
-| 2 | `arg2-shannon` | Fetch Wikipedia article (researcher web fetch) | ✅ | 109.6s |
-| 3 | `arg3-populations` | Multi-city research (parallel researchers) | ✅ | 73.5s |
-| 4 | `arg4-nonexistent` | Error handling (read non-existent file) | ✅ | 11.4s |
-| 5 | `arg5-africa` | Multi-city Africa research (parallel researchers) | ✅ | 83.4s |
-| 6 | `skill-parallel` | Parallel processing — multiple financial/tech queries spawned by Planner | ✅ | 63.7s |
-| 7 | `skill-critic` | Critic skill — Researcher fetches → Critic fact-checks → Distiller formats structured output | ✅ | 60.8s |
-| 8 | `skill-coder` | Coder skill + SandboxExecutor — Kadane's algorithm | ✅ | 16.6s |
-| 9 | `skill-token-miser` | Token Miser — large Wikipedia article triggers auto-compression | ✅ | 57.7s |
-
-**9/9 queries succeeded.**
-
-## Full Logs
-
-Full raw logs saved to: [`/Users/kural/Documents/EAGv3/WEEK8/multi-agent-dag/run_logs/run_20260610_224505.log`](/Users/kural/Documents/EAGv3/WEEK8/multi-agent-dag/run_logs/run_20260610_224505.log)
-
----
-
-### Query #1: arg1-hello ✅
-
-**Purpose:** Basic hello-world test
-
-**Query:** `Say hello.`
-
-**Elapsed:** 10.9s  |  **Exit code:** 0
-
-```
 [gateway] launching llm_gatewayV8 from /Users/kural/Documents/EAGv3/WEEK8/multi-agent-dag/gateway
 [gateway] up on http://localhost:8108
 
@@ -46,19 +23,14 @@ session s8-cfb9175b  ─  query: Say hello.
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: Hello! How can I help you today?
 ══════════════════════════════════════════════════════════════════════════════
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #2  [arg2-shannon]  ✓
+Query:    Fetch https://en.wikipedia.org/wiki/Claude_Shannon and tell me his birth date, death date, and three key contributions to information theory.
+Elapsed:  109.6s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #2: arg2-shannon ✅
-
-**Purpose:** Fetch Wikipedia article (researcher web fetch)
-
-**Query:** `Fetch https://en.wikipedia.org/wiki/Claude_Shannon and tell me his birth date, death date, and three key contributions to information theory.`
-
-**Elapsed:** 109.6s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-d9d75664  ─  query: Fetch https://en.wikipedia.org/wiki/Claude_Shannon and tell me his birth date, death date, and three key contributions to information theory.
 ══════════════════════════════════════════════════════════════════════════════
@@ -87,10 +59,8 @@ TOKEN MISER — SESSION SUMMARY
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: Claude Shannon was born on April 30, 1916, and passed away on February 24, 2001. His three key contributions to information theory include: 1) Founding information theory with his seminal paper 'The Mathematical Theory of Communication,' 2) Introducing the 'bit' as the fundamental unit of information, and 3) Developing the channel coding theorem.
 ══════════════════════════════════════════════════════════════════════════════
-```
 
-**stderr:**
-```
+── stderr ──
 [06/10/26 22:45:28] INFO     Processing request of type            server.py:727
                              CallToolRequest                                    
 [INIT].... → Crawl4AI 0.8.6 
@@ -119,19 +89,14 @@ FINAL: Claude Shannon was born on April 30, 1916, and passed away on February 24
                              https://search.brave.com/search?q=Claude           
                              +Shannon+birth+date+death+date+informati           
                              on+theory+contributions&source=web 200
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #3  [arg3-populations]  ✓
+Query:    Find the populations of London, Paris, Berlin and tell me which two are closest in size.
+Elapsed:  73.5s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #3: arg3-populations ✅
-
-**Purpose:** Multi-city research (parallel researchers)
-
-**Query:** `Find the populations of London, Paris, Berlin and tell me which two are closest in size.`
-
-**Elapsed:** 73.5s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-d7411617  ─  query: Find the populations of London, Paris, Berlin and tell me which two are closest in size.
 ══════════════════════════════════════════════════════════════════════════════
@@ -173,10 +138,8 @@ FINAL: Based on the provided data, here are the approximate populations for the 
 
 Comparing these figures, Berlin and Paris are the two cities closest in size, with a difference of approximately 1.84 million people, compared to the larger gaps between London and the other two cities.
 ══════════════════════════════════════════════════════════════════════════════
-```
 
-**stderr:**
-```
+── stderr ──
 [06/10/26 22:47:18] INFO     Processing request of type            server.py:727
                              CallToolRequest                                    
                     INFO     response:                                lib.rs:444
@@ -257,19 +220,14 @@ mographic-data       | ✓ | ⏱: 2.83s
 | ✓ | ⏱: 0.01s 
 [COMPLETE] ● https://worldpopulationreview.com/cities/france/paris              
 | ✓ | ⏱: 1.08s
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #4  [arg4-nonexistent]  ✓
+Query:    Read /nonexistent/path.txt and tell me what's in it.
+Elapsed:  11.4s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #4: arg4-nonexistent ✅
-
-**Purpose:** Error handling (read non-existent file)
-
-**Query:** `Read /nonexistent/path.txt and tell me what's in it.`
-
-**Elapsed:** 11.4s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-645fc51a  ─  query: Read /nonexistent/path.txt and tell me what's in it.
 ══════════════════════════════════════════════════════════════════════════════
@@ -280,19 +238,14 @@ session s8-645fc51a  ─  query: Read /nonexistent/path.txt and tell me what's i
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: I am unable to read the file at /nonexistent/path.txt because it does not exist.
 ══════════════════════════════════════════════════════════════════════════════
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #5  [arg5-africa]  ✓
+Query:    For Lagos, Cairo, and Kinshasa, find current populations and growth rates and tell me which is growing fastest.
+Elapsed:  83.4s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #5: arg5-africa ✅
-
-**Purpose:** Multi-city Africa research (parallel researchers)
-
-**Query:** `For Lagos, Cairo, and Kinshasa, find current populations and growth rates and tell me which is growing fastest.`
-
-**Elapsed:** 83.4s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-90d38fb1  ─  query: For Lagos, Cairo, and Kinshasa, find current populations and growth rates and tell me which is growing fastest.
 ══════════════════════════════════════════════════════════════════════════════
@@ -336,10 +289,8 @@ FINAL: Based on the available data, here is the population and growth rate compa
 
 Kinshasa is growing the fastest among these cities, with an annual growth rate of approximately 4.4%. Sources: Wikipedia (Lagos), MacroTrends (Cairo, Kinshasa), and ExplorationMap (Kinshasa).
 ══════════════════════════════════════════════════════════════════════════════
-```
 
-**stderr:**
-```
+── stderr ──
 [06/10/26 22:48:43] INFO     Processing request of type            server.py:727
                              CallToolRequest                                    
                     INFO     response:                                lib.rs:444
@@ -434,19 +385,14 @@ https://www.macrotrends.net/global-metrics/cities/22812/cairo/population
 | ✓ | ⏱: 0.31s 
 [COMPLETE] ● https://en.wikipedia.org/wiki/Lagos                                
 | ✓ | ⏱: 1.56s
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #6  [skill-parallel]  ✓
+Query:    Find the current market capitalization of Apple, Microsoft, and Google (Alphabet), and tell me which company has the highest market cap and by how much it leads the second-place company.
+Elapsed:  63.7s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #6: skill-parallel ✅
-
-**Purpose:** Parallel processing — multiple financial/tech queries spawned by Planner
-
-**Query:** `Find the current market capitalization of Apple, Microsoft, and Google (Alphabet), and tell me which company has the highest market cap and by how much it leads the second-place company.`
-
-**Elapsed:** 63.7s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-308ac992  ─  query: Find the current market capitalization of Apple, Microsoft, and Google (Alphabet), and tell me which company has the highest market cap and by how much it leads the second-place company.
 ══════════════════════════════════════════════════════════════════════════════
@@ -488,10 +434,8 @@ FINAL: As of the most recent data, the market capitalizations for the three comp
 
 Alphabet currently holds the highest market capitalization among the three. It leads the second-place company, Apple, by approximately $0.11 trillion ($110 billion).
 ══════════════════════════════════════════════════════════════════════════════
-```
 
-**stderr:**
-```
+── stderr ──
 [06/10/26 22:50:06] INFO     Processing request of type            server.py:727
                              CallToolRequest                                    
                     INFO     response:                                lib.rs:444
@@ -575,19 +519,14 @@ Alphabet currently holds the highest market capitalization among the three. It l
 | ✓ | ⏱: 0.01s 
 [COMPLETE] ● https://stockanalysis.com/stocks/aapl/market-cap/                  
 | ✓ | ⏱: 1.49s
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #7  [skill-critic]  ✓
+Query:    Fetch the Wikipedia article on the Pyramids of Giza and extract: who built them, when were they built, and how long did it take to construct the Great Pyramid. Also investigate the claim that extraterrestrials built the pyramids — present any evidence for or against this, with sources.
+Elapsed:  60.8s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #7: skill-critic ✅
-
-**Purpose:** Critic skill — Researcher fetches → Critic fact-checks → Distiller formats structured output
-
-**Query:** `Fetch the Wikipedia article on the Pyramids of Giza and extract: who built them, when were they built, and how long did it take to construct the Great Pyramid. Also investigate the claim that extraterrestrials built the pyramids — present any evidence for or against this, with sources.`
-
-**Elapsed:** 60.8s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-5c226af9  ─  query: Fetch the Wikipedia article on the Pyramids of Giza and extract: who built them, when were they built, and how long did it take to construct the Great Pyramid. Also investigate the claim that extraterrestrials built the pyramids — present any evidence for or against this, with sources.
 ══════════════════════════════════════════════════════════════════════════════
@@ -619,10 +558,8 @@ TOKEN MISER — SESSION SUMMARY
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: The Giza pyramids were built by the Pharaohs Khufu, Khafre, and Menkaure during the Fourth Dynasty of the Old Kingdom, approximately between 2600 BC and 2500 BC. The construction of the Great Pyramid is estimated to have taken about 26 years. Regarding the claim that extraterrestrials built the pyramids, there is no scientific or archaeological evidence to support this theory. While proponents of the claim often cite the perceived impossibility of ancient humans moving massive stone blocks with such precision, the archaeological consensus is that the pyramids were constructed by ancient Egypti
 ══════════════════════════════════════════════════════════════════════════════
-```
 
-**stderr:**
-```
+── stderr ──
 [06/10/26 22:51:10] INFO     Processing request of type            server.py:727
                              CallToolRequest                                    
 [INIT].... → Crawl4AI 0.8.6 
@@ -709,19 +646,14 @@ FINAL: The Giza pyramids were built by the Pharaohs Khufu, Khafre, and Menkaure 
 [06/10/26 22:51:32] INFO     response: https://www.startpage.com/ 200 lib.rs:444
 [06/10/26 22:51:33] INFO     response:                                lib.rs:444
                              https://www.startpage.com/sp/search 200
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #8  [skill-coder]  ✓
+Query:    Write a Python function implementing Kadane's algorithm to find the maximum sum subarray in an array that may contain negative numbers. Then test it on the input [-2, 1, -3, 4, -1, 2, 1, -5, 4] and run it in the sandbox to show the result.
+Elapsed:  16.6s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #8: skill-coder ✅
-
-**Purpose:** Coder skill + SandboxExecutor — Kadane's algorithm
-
-**Query:** `Write a Python function implementing Kadane's algorithm to find the maximum sum subarray in an array that may contain negative numbers. Then test it on the input [-2, 1, -3, 4, -1, 2, 1, -5, 4] and run it in the sandbox to show the result.`
-
-**Elapsed:** 16.6s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-435aea4c  ─  query: Write a Python function implementing Kadane's algorithm to find the maximum sum subarray in an array that may contain negative numbers. Then test it on the input [-2, 1, -3, 4, -1, 2, 1, -5, 4] and run it in the sandbox to show the result.
 ══════════════════════════════════════════════════════════════════════════════
@@ -750,19 +682,14 @@ print(kadane(nums))
 
 When executed on the input array `[-2, 1, -3, 4, -1, 2, 1, -5, 4]`, the function returns a maximum
 ══════════════════════════════════════════════════════════════════════════════
-```
 
----
+──────────────────────────────────────────────────────────────────────────────
+QUERY #9  [skill-token-miser]  ✓
+Query:    Fetch the Wikipedia article on the Solar System and summarise its contents covering: the Sun, all eight planets, the asteroid belt, Kuiper belt, and Oort cloud. Provide key facts about each celestial body including size, distance from Sun, orbital period, and unique characteristics. Be thorough and use detailed descriptions.
+Elapsed:  57.7s
+Exit:     0
+──────────────────────────────────────────────────────────────────────────────
 
-### Query #9: skill-token-miser ✅
-
-**Purpose:** Token Miser — large Wikipedia article triggers auto-compression
-
-**Query:** `Fetch the Wikipedia article on the Solar System and summarise its contents covering: the Sun, all eight planets, the asteroid belt, Kuiper belt, and Oort cloud. Provide key facts about each celestial body including size, distance from Sun, orbital period, and unique characteristics. Be thorough and use detailed descriptions.`
-
-**Elapsed:** 57.7s  |  **Exit code:** 0
-
-```
 ══════════════════════════════════════════════════════════════════════════════
 session s8-9400bfdd  ─  query: Fetch the Wikipedia article on the Solar System and summarise its contents covering: the Sun, all eight planets, the asteroid belt, Kuiper belt, and Oort cloud. Provide key facts about each celestial body including size, distance from Sun, orbital period, and unique characteristics. Be thorough and use detailed descriptions.
 ══════════════════════════════════════════════════════════════════════════════
@@ -796,10 +723,8 @@ FINAL: The Solar System is a 4.6-billion-year-old gravitationally bound system l
 3. Asteroid Belt: A region located between the orbits of Mars and Jupiter containing numerous rocky bodies.
 4. Outer Giant Planets: Jupiter, Saturn, Uranus, 
 ══════════════════════════════════════════════════════════════════════════════
-```
 
-**stderr:**
-```
+── stderr ──
 [06/10/26 22:52:27] INFO     Processing request of type            server.py:727
                              CallToolRequest                                    
                     INFO     response:                                lib.rs:444
@@ -825,4 +750,7 @@ FINAL: The Solar System is a 4.6-billion-year-old gravitationally bound system l
 | ✓ | ⏱: 0.34s 
 [COMPLETE] ● https://en.wikipedia.org/wiki/Solar_System                         
 | ✓ | ⏱: 1.72s
-```
+
+==============================================================================
+END OF LOG
+==============================================================================
