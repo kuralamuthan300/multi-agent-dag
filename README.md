@@ -735,7 +735,7 @@ session s8-435aea4c  ─  query: Write a Python function implementing Kadane's a
 ══════════════════════════════════════════════════════════════════════════════
 FINAL: To find the maximum sum subarray, we can use Kadane's algorithm, which iterates through the array while maintaining the maximum sum ending at the current position. Here is the Python implementation:
 
-```python
+\`\`\`python
 def kadane(arr):
     max_so_far = arr[0]
     current_max = arr[0]
@@ -746,7 +746,7 @@ def kadane(arr):
 
 nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]
 print(kadane(nums))
-```
+\`\`\`
 
 When executed on the input array `[-2, 1, -3, 4, -1, 2, 1, -5, 4]`, the function returns a maximum
 ══════════════════════════════════════════════════════════════════════════════

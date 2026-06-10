@@ -59,7 +59,7 @@ QUERIES = [
     {
         "id": "skill-coder",
         "purpose": "Coder skill + SandboxExecutor — Kadane's algorithm",
-        "query": "Write a Python function implementing Kadane's algorithm to find the maximum sum subarray in an array that may contain negative numbers. Then test it on the input [-2, 1, -3, 4, -1, 2, 1, -5, 4] and run it in the sandbox to show the result."
+        "query": "find the maximum sum subarray in an array that may contain negative numbers-  [-2, 1, -3, 4, -1, 2, 1, -5, 4]"
     },
     {
         "id": "skill-token-miser",
@@ -203,21 +203,22 @@ def build_readme(results: list[dict], log_path: str) -> str:
         lines.append("")
         lines.append(f"**Elapsed:** {r['elapsed']:.1f}s  |  **Exit code:** {r['returncode']}")
         lines.append("")
-        lines.append("```")
         # truncate stdout to 500 lines to keep README manageable
         out_lines = r["stdout"].strip().splitlines()
         if len(out_lines) > 500:
             out_lines = out_lines[:500] + [
                 f"... ({len(out_lines) - 500} more lines truncated)"
             ]
-        lines.append("\n".join(out_lines))
+        # Use indented code block (4 spaces) instead of fenced (```)
+        # to avoid breakage from triple backticks inside stdout (e.g. code snippets)
+        for line in out_lines:
+            lines.append(f"    {line}")
         if r["stderr"].strip():
-            lines.append("```")
             lines.append("")
             lines.append("**stderr:**")
-            lines.append("```")
-            lines.append(r["stderr"].strip())
-        lines.append("```")
+            stderr_lines = r["stderr"].strip().splitlines()
+            for line in stderr_lines:
+                lines.append(f"    {line}")
         lines.append("")
 
     return "\n".join(lines)
