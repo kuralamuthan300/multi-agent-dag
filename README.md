@@ -1,26 +1,26 @@
 # Multi-Agent DAG — Batch Run Results
 
-Batch executed on **2026-06-10 22:53:13**
+Batch executed on **2026-06-10 23:05:34**
 
 ## Summary
 
 | # | Label | Purpose | Status | Time |
 |---|-------|---------|--------|------|
-| 1 | `arg1-hello` | Basic hello-world test | ✅ | 10.9s |
-| 2 | `arg2-shannon` | Fetch Wikipedia article (researcher web fetch) | ✅ | 109.6s |
-| 3 | `arg3-populations` | Multi-city research (parallel researchers) | ✅ | 73.5s |
-| 4 | `arg4-nonexistent` | Error handling (read non-existent file) | ✅ | 11.4s |
-| 5 | `arg5-africa` | Multi-city Africa research (parallel researchers) | ✅ | 83.4s |
-| 6 | `skill-parallel` | Parallel processing — multiple financial/tech queries spawned by Planner | ✅ | 63.7s |
-| 7 | `skill-critic` | Critic skill — Researcher fetches → Critic fact-checks → Distiller formats structured output | ✅ | 60.8s |
-| 8 | `skill-coder` | Coder skill + SandboxExecutor — Kadane's algorithm | ✅ | 16.6s |
-| 9 | `skill-token-miser` | Token Miser — large Wikipedia article triggers auto-compression | ✅ | 57.7s |
+| 1 | `arg1-hello` | Basic hello-world test | ✅ | 9.5s |
+| 2 | `arg2-shannon` | Fetch Wikipedia article (researcher web fetch) | ✅ | 48.8s |
+| 3 | `arg3-populations` | Multi-city research (parallel researchers) | ✅ | 55.3s |
+| 4 | `arg4-nonexistent` | Error handling (read non-existent file) | ✅ | 11.6s |
+| 5 | `arg5-africa` | Multi-city Africa research (parallel researchers) | ✅ | 50.5s |
+| 6 | `skill-parallel` | Parallel processing — multiple financial/tech queries spawned by Planner | ✅ | 53.8s |
+| 7 | `skill-critic` | Critic skill — Researcher fetches → Critic fact-checks → Distiller formats structured output | ✅ | 41.6s |
+| 8 | `skill-coder` | Coder skill + SandboxExecutor — Kadane's algorithm | ✅ | 15.2s |
+| 9 | `skill-token-miser` | Token Miser — large Wikipedia article triggers auto-compression | ✅ | 30.9s |
 
 **9/9 queries succeeded.**
 
 ## Full Logs
 
-Full raw logs saved to: [`/Users/kural/Documents/EAGv3/WEEK8/multi-agent-dag/run_logs/run_20260610_224505.log`](/Users/kural/Documents/EAGv3/WEEK8/multi-agent-dag/run_logs/run_20260610_224505.log)
+Full raw logs saved to: [`/Users/kural/Documents/EAGv3/WEEK8/multi-agent-dag/run_logs/run_20260610_230017.log`](/Users/kural/Documents/EAGv3/WEEK8/multi-agent-dag/run_logs/run_20260610_230017.log)
 
 ---
 
@@ -30,23 +30,18 @@ Full raw logs saved to: [`/Users/kural/Documents/EAGv3/WEEK8/multi-agent-dag/run
 
 **Query:** `Say hello.`
 
-**Elapsed:** 10.9s  |  **Exit code:** 0
+**Elapsed:** 9.5s  |  **Exit code:** 0
 
-```
-[gateway] launching llm_gatewayV8 from /Users/kural/Documents/EAGv3/WEEK8/multi-agent-dag/gateway
-[gateway] up on http://localhost:8108
-
-══════════════════════════════════════════════════════════════════════════════
-session s8-cfb9175b  ─  query: Say hello.
-══════════════════════════════════════════════════════════════════════════════
-[memory.read] 8 hit(s) visible to every skill this run
-[n:1] planner            complete (4.0s)
-[n:2] formatter          complete (3.9s)
-
-══════════════════════════════════════════════════════════════════════════════
-FINAL: Hello! How can I help you today?
-══════════════════════════════════════════════════════════════════════════════
-```
+    ══════════════════════════════════════════════════════════════════════════════
+    session s8-f47cd5d0  ─  query: Say hello.
+    ══════════════════════════════════════════════════════════════════════════════
+    [memory.read] 8 hit(s) visible to every skill this run
+    [n:1] planner            complete (4.0s)
+    [n:2] formatter          complete (4.0s)
+    
+    ══════════════════════════════════════════════════════════════════════════════
+    FINAL: Hello! How can I help you today?
+    ══════════════════════════════════════════════════════════════════════════════
 
 ---
 
@@ -56,70 +51,36 @@ FINAL: Hello! How can I help you today?
 
 **Query:** `Fetch https://en.wikipedia.org/wiki/Claude_Shannon and tell me his birth date, death date, and three key contributions to information theory.`
 
-**Elapsed:** 109.6s  |  **Exit code:** 0
+**Elapsed:** 48.8s  |  **Exit code:** 0
 
-```
-══════════════════════════════════════════════════════════════════════════════
-session s8-d9d75664  ─  query: Fetch https://en.wikipedia.org/wiki/Claude_Shannon and tell me his birth date, death date, and three key contributions to information theory.
-══════════════════════════════════════════════════════════════════════════════
-[memory.read] 8 hit(s) visible to every skill this run
-[n:1] planner            complete (4.6s)
-[n:2] researcher         complete (12.5s)
-  └─ inserted token_miser (n:5) between n:2 → n:3
-  └─ Token Miser: 1,165→900 chars (23% reduction)
-[n:5] token_miser        complete (83.1s)
-[n:3] distiller          complete (1.1s)
-[n:4] formatter          complete (3.9s)
-
-────────────────────────────────────────────────────────────
-TOKEN MISER — SESSION SUMMARY
-────────────────────────────────────────────────────────────
-  Nodes compressed: 1
-  Total input chars: 1,165
-  Total output chars: 900
-  Overall compression: 22.7%
-  Gross chars saved (× downstream readers): 265
-  Est. token savings: ~66
-  Miser LLM cost (est. tokens): −0
-  Net estimated token savings: ~66
-────────────────────────────────────────────────────────────
-
-══════════════════════════════════════════════════════════════════════════════
-FINAL: Claude Shannon was born on April 30, 1916, and passed away on February 24, 2001. His three key contributions to information theory include: 1) Founding information theory with his seminal paper 'The Mathematical Theory of Communication,' 2) Introducing the 'bit' as the fundamental unit of information, and 3) Developing the channel coding theorem.
-══════════════════════════════════════════════════════════════════════════════
-```
-
-**stderr:**
-```
-[06/10/26 22:45:28] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[INIT].... → Crawl4AI 0.8.6 
-[FETCH]... ↓ https://en.wikipedia.org/wiki/Claude_Shannon                       
-| ✓ | ⏱: 1.26s 
-[SCRAPE].. ◆ https://en.wikipedia.org/wiki/Claude_Shannon                       
-| ✓ | ⏱: 0.16s 
-[COMPLETE] ● https://en.wikipedia.org/wiki/Claude_Shannon                       
-| ✓ | ⏱: 1.43s 
-[06/10/26 22:45:31] INFO     Processing request of type            server.py:727
-                             ListToolsRequest                                   
-[06/10/26 22:45:32] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[06/10/26 22:45:34] INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=Claude+Shannon+birth+date+death+date+           
-                             information+theory+contributions&limit=1           
-                              200                                               
-                    INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=Claude%20Shannon%20birth%20date%20deat           
-                             h%20date%20information%20theory%20contri           
-                             butions 200                                        
-[06/10/26 22:45:35] INFO     response:                                lib.rs:444
-                             https://search.brave.com/search?q=Claude           
-                             +Shannon+birth+date+death+date+informati           
-                             on+theory+contributions&source=web 200
-```
+    ══════════════════════════════════════════════════════════════════════════════
+    session s8-7ad1fd00  ─  query: Fetch https://en.wikipedia.org/wiki/Claude_Shannon and tell me his birth date, death date, and three key contributions to information theory.
+    ══════════════════════════════════════════════════════════════════════════════
+    [memory.read] 8 hit(s) visible to every skill this run
+    [n:1] planner            complete (4.6s)
+    [n:2] researcher         complete (16.4s)
+      └─ inserted token_miser (n:5) between n:2 → n:3
+      └─ Token Miser: 950→407 chars (57% reduction)
+    [n:5] token_miser        complete (18.5s)
+    [n:3] distiller          complete (1.1s)
+    [n:4] formatter          complete (3.7s)
+    
+    ────────────────────────────────────────────────────────────
+    TOKEN MISER — SESSION SUMMARY
+    ────────────────────────────────────────────────────────────
+      Nodes compressed: 1
+      Total input chars: 950
+      Total output chars: 407
+      Overall compression: 57.2%
+      Gross chars saved (× downstream readers): 543
+      Est. token savings: ~135
+      Miser LLM cost (est. tokens): −0
+      Net estimated token savings: ~135
+    ────────────────────────────────────────────────────────────
+    
+    ══════════════════════════════════════════════════════════════════════════════
+    FINAL: Claude Shannon was born on April 30, 1916, and passed away on February 24, 2001. His three key contributions to information theory include: 1) Defining the 'bit' as the fundamental unit of information, 2) The development of the noisy-channel coding theorem, and 3) The introduction of information entropy.
+    ══════════════════════════════════════════════════════════════════════════════
 
 ---
 
@@ -129,135 +90,49 @@ FINAL: Claude Shannon was born on April 30, 1916, and passed away on February 24
 
 **Query:** `Find the populations of London, Paris, Berlin and tell me which two are closest in size.`
 
-**Elapsed:** 73.5s  |  **Exit code:** 0
+**Elapsed:** 55.3s  |  **Exit code:** 0
 
-```
-══════════════════════════════════════════════════════════════════════════════
-session s8-d7411617  ─  query: Find the populations of London, Paris, Berlin and tell me which two are closest in size.
-══════════════════════════════════════════════════════════════════════════════
-[memory.read] 8 hit(s) visible to every skill this run
-[n:1] planner            complete (4.7s)
-[n:2] researcher         complete (16.3s)
-  └─ inserted token_miser (n:6) between n:2 → n:5
-[n:3] researcher         complete (36.4s)
-  └─ inserted token_miser (n:7) between n:3 → n:5
-[n:4] researcher         complete (28.2s)
-  └─ inserted token_miser (n:8) between n:4 → n:5
-  └─ Token Miser: 916→415 chars (55% reduction)
-[n:6] token_miser        complete (11.6s)
-  └─ Token Miser: 848→442 chars (48% reduction)
-[n:7] token_miser        complete (27.0s)
-  └─ Token Miser: 750→335 chars (55% reduction)
-[n:8] token_miser        complete (13.5s)
-[n:5] formatter          complete (1.4s)
-
-────────────────────────────────────────────────────────────
-TOKEN MISER — SESSION SUMMARY
-────────────────────────────────────────────────────────────
-  Nodes compressed: 3
-  Total input chars: 2,514
-  Total output chars: 1,192
-  Overall compression: 52.6%
-  Gross chars saved (× downstream readers): 1,322
-  Est. token savings: ~330
-  Miser LLM cost (est. tokens): −0
-  Net estimated token savings: ~330
-────────────────────────────────────────────────────────────
-
-══════════════════════════════════════════════════════════════════════════════
-FINAL: Based on the provided data, here are the approximate populations for the city proper of each location:
-
-1. London: ~9.1 million
-2. Berlin: ~3.9 million
-3. Paris: ~2.06 million
-
-Comparing these figures, Berlin and Paris are the two cities closest in size, with a difference of approximately 1.84 million people, compared to the larger gaps between London and the other two cities.
-══════════════════════════════════════════════════════════════════════════════
-```
-
-**stderr:**
-```
-[06/10/26 22:47:18] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=current+population+of+London+2024+202           
-                             5&limit=1 200                                      
-                    INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=current%20population%20of%20London%202           
-                             024%202025 200                                     
-[06/10/26 22:47:19] INFO     response:                                lib.rs:444
-                             https://search.brave.com/search?q=curren           
-                             t+population+of+London+2024+2025&source=           
-                             web 200                                            
-                    INFO     Processing request of type            server.py:727
-                             ListToolsRequest                                   
-[06/10/26 22:47:22] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[INIT].... → Crawl4AI 0.8.6 
-[FETCH]... ↓ https://en.wikipedia.org/wiki/London                               
-| ✓ | ⏱: 1.65s 
-[SCRAPE].. ◆ https://en.wikipedia.org/wiki/London                               
-| ✓ | ⏱: 0.41s 
-[COMPLETE] ● https://en.wikipedia.org/wiki/London                               
-| ✓ | ⏱: 2.07s 
-[06/10/26 22:47:26] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=current+population+of+Paris+France+20           
-                             24+2025&limit=1 200                                
-                    INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=current%20population%20of%20Paris%20Fr           
-                             ance%202024%202025 200                             
-[06/10/26 22:47:27] INFO     HTTP Request: POST                  _client.py:1025
-                             https://html.duckduckgo.com/html/                  
-                             "HTTP/2 200 OK"                                    
-                    INFO     Processing request of type            server.py:727
-                             ListToolsRequest                                   
-[06/10/26 22:47:34] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=current+population+of+Berlin+2024+202           
-                             5&limit=1 200                                      
-[06/10/26 22:47:35] INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=current%20population%20of%20Berlin%202           
-                             024%202025 200                                     
-[06/10/26 22:47:36] INFO     response:                                lib.rs:444
-                             https://yandex.com/search/site/?text=cur           
-                             rent+population+of+Berlin+2024+2025&web=           
-                             1&searchid=1841651 200                             
-                    INFO     Processing request of type            server.py:727
-                             ListToolsRequest                                   
-[06/10/26 22:47:38] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[INIT].... → Crawl4AI 0.8.6 
-[FETCH]... ↓ 
-https://www.businesslocationcenter.de/en/business-location/berlin-at-a-glance/de
-mographic-data       | ✓ | ⏱: 2.80s 
-[SCRAPE].. ◆ 
-https://www.businesslocationcenter.de/en/business-location/berlin-at-a-glance/de
-mographic-data       | ✓ | ⏱: 0.03s 
-[COMPLETE] ● 
-https://www.businesslocationcenter.de/en/business-location/berlin-at-a-glance/de
-mographic-data       | ✓ | ⏱: 2.83s 
-[06/10/26 22:47:46] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[INIT].... → Crawl4AI 0.8.6 
-[FETCH]... ↓ https://worldpopulationreview.com/cities/france/paris              
-| ✓ | ⏱: 1.06s 
-[SCRAPE].. ◆ https://worldpopulationreview.com/cities/france/paris              
-| ✓ | ⏱: 0.01s 
-[COMPLETE] ● https://worldpopulationreview.com/cities/france/paris              
-| ✓ | ⏱: 1.08s
-```
+    ══════════════════════════════════════════════════════════════════════════════
+    session s8-bf82f177  ─  query: Find the populations of London, Paris, Berlin and tell me which two are closest in size.
+    ══════════════════════════════════════════════════════════════════════════════
+    [memory.read] 8 hit(s) visible to every skill this run
+    [n:1] planner            complete (4.4s)
+    [n:2] researcher         complete (20.7s)
+      └─ inserted token_miser (n:6) between n:2 → n:5
+    [n:3] researcher         complete (40.6s)
+      └─ inserted token_miser (n:7) between n:3 → n:5
+    [n:4] researcher         complete (36.5s)
+      └─ inserted token_miser (n:8) between n:4 → n:5
+      └─ Token Miser: 1,114→494 chars (56% reduction)
+    [n:6] token_miser        complete (4.7s)
+      └─ Token Miser: 870→425 chars (51% reduction)
+    [n:7] token_miser        complete (4.1s)
+      └─ Token Miser: 690→349 chars (49% reduction)
+    [n:8] token_miser        complete (2.6s)
+    [n:5] formatter          complete (1.1s)
+    
+    ────────────────────────────────────────────────────────────
+    TOKEN MISER — SESSION SUMMARY
+    ────────────────────────────────────────────────────────────
+      Nodes compressed: 3
+      Total input chars: 2,674
+      Total output chars: 1,268
+      Overall compression: 52.6%
+      Gross chars saved (× downstream readers): 1,406
+      Est. token savings: ~351
+      Miser LLM cost (est. tokens): −0
+      Net estimated token savings: ~351
+    ────────────────────────────────────────────────────────────
+    
+    ══════════════════════════════════════════════════════════════════════════════
+    FINAL: Based on the latest available data, the populations for the three cities are as follows:
+    
+    * London: ~9,188,200 (Greater London estimate)
+    * Paris: ~2,060,000 (City/Commune estimate)
+    * Berlin: 3,685,265
+    
+    Comparing these figures, Berlin and Paris are the two cities closest in size, with a difference of approximately 1.63 million people, whereas London's population is significantly larger than both.
+    ══════════════════════════════════════════════════════════════════════════════
 
 ---
 
@@ -267,20 +142,18 @@ mographic-data       | ✓ | ⏱: 2.83s
 
 **Query:** `Read /nonexistent/path.txt and tell me what's in it.`
 
-**Elapsed:** 11.4s  |  **Exit code:** 0
+**Elapsed:** 11.6s  |  **Exit code:** 0
 
-```
-══════════════════════════════════════════════════════════════════════════════
-session s8-645fc51a  ─  query: Read /nonexistent/path.txt and tell me what's in it.
-══════════════════════════════════════════════════════════════════════════════
-[memory.read] 8 hit(s) visible to every skill this run
-[n:1] planner            complete (4.4s)
-[n:2] formatter          complete (3.5s)
-
-══════════════════════════════════════════════════════════════════════════════
-FINAL: I am unable to read the file at /nonexistent/path.txt because it does not exist.
-══════════════════════════════════════════════════════════════════════════════
-```
+    ══════════════════════════════════════════════════════════════════════════════
+    session s8-a467e84f  ─  query: Read /nonexistent/path.txt and tell me what's in it.
+    ══════════════════════════════════════════════════════════════════════════════
+    [memory.read] 8 hit(s) visible to every skill this run
+    [n:1] planner            complete (3.9s)
+    [n:2] formatter          complete (3.9s)
+    
+    ══════════════════════════════════════════════════════════════════════════════
+    FINAL: I am unable to read the file at /nonexistent/path.txt because it does not exist.
+    ══════════════════════════════════════════════════════════════════════════════
 
 ---
 
@@ -290,151 +163,56 @@ FINAL: I am unable to read the file at /nonexistent/path.txt because it does not
 
 **Query:** `For Lagos, Cairo, and Kinshasa, find current populations and growth rates and tell me which is growing fastest.`
 
-**Elapsed:** 83.4s  |  **Exit code:** 0
+**Elapsed:** 50.5s  |  **Exit code:** 0
 
-```
-══════════════════════════════════════════════════════════════════════════════
-session s8-90d38fb1  ─  query: For Lagos, Cairo, and Kinshasa, find current populations and growth rates and tell me which is growing fastest.
-══════════════════════════════════════════════════════════════════════════════
-[memory.read] 8 hit(s) visible to every skill this run
-[n:1] planner            complete (4.6s)
-[n:2] researcher         complete (36.4s)
-  └─ inserted token_miser (n:6) between n:2 → n:5
-[n:3] researcher         complete (28.2s)
-  └─ inserted token_miser (n:7) between n:3 → n:5
-[n:4] researcher         complete (15.8s)
-  └─ inserted token_miser (n:8) between n:4 → n:5
-  └─ Token Miser: 733→330 chars (55% reduction)
-[n:6] token_miser        complete (11.4s)
-  └─ Token Miser: 591→318 chars (46% reduction)
-[n:7] token_miser        complete (16.4s)
-  └─ Token Miser: 915→500 chars (45% reduction)
-[n:8] token_miser        complete (36.5s)
-[n:5] formatter          complete (1.4s)
-
-────────────────────────────────────────────────────────────
-TOKEN MISER — SESSION SUMMARY
-────────────────────────────────────────────────────────────
-  Nodes compressed: 3
-  Total input chars: 2,239
-  Total output chars: 1,148
-  Overall compression: 48.7%
-  Gross chars saved (× downstream readers): 1,091
-  Est. token savings: ~272
-  Miser LLM cost (est. tokens): −0
-  Net estimated token savings: ~272
-────────────────────────────────────────────────────────────
-
-══════════════════════════════════════════════════════════════════════════════
-FINAL: Based on the available data, here is the population and growth rate comparison for the three cities:
-
-| City | Estimated Population | Annual Growth Rate |
-| :--- | :--- | :--- |
-| Cairo | ~23.54 million (2026) | ~2.0% |
-| Kinshasa | ~17.78 million (2025) | ~4.38% - 4.4% |
-| Lagos | 17-21 million (2025) | Not specified (Fast-growing) |
-
-Kinshasa is growing the fastest among these cities, with an annual growth rate of approximately 4.4%. Sources: Wikipedia (Lagos), MacroTrends (Cairo, Kinshasa), and ExplorationMap (Kinshasa).
-══════════════════════════════════════════════════════════════════════════════
-```
-
-**stderr:**
-```
-[06/10/26 22:48:43] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=current%20population%20and%20annual%20           
-                             growth%20rate%20of%20Lagos%202024%202025           
-                              200                                               
-[06/10/26 22:48:44] INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=current+population+and+annual+growth+           
-                             rate+of+Lagos+2024+2025&limit=1 200                
-[06/10/26 22:48:45] INFO     response:                                lib.rs:444
-                             https://yandex.com/search/site/?text=cur           
-                             rent+population+and+annual+growth+rate+o           
-                             f+Lagos+2024+2025&web=1&searchid=6199102           
-                              200                                               
-                    INFO     Processing request of type            server.py:727
-                             ListToolsRequest                                   
-[06/10/26 22:48:47] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=current+population+and+annual+growth+           
-                             rate+of+Cairo+2024+2025&limit=1 200                
-                    INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=current%20population%20and%20annual%20           
-                             growth%20rate%20of%20Cairo%202024%202025           
-                              200                                               
-[06/10/26 22:48:48] INFO     response:                                lib.rs:444
-                             https://search.brave.com/search?q=curren           
-                             t+population+and+annual+growth+rate+of+C           
-                             airo+2024+2025&source=web 200                      
-                    INFO     Processing request of type            server.py:727
-                             ListToolsRequest                                   
-[06/10/26 22:48:51] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[06/10/26 22:48:52] INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=current%20population%20and%20annual%20           
-                             growth%20rate%20of%20Kinshasa%202024%202           
-                             025 200                                            
-                    INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=current+population+and+annual+growth+           
-                             rate+of+Kinshasa+2024+2025&limit=1 200             
-[06/10/26 22:48:53] INFO     response:                                lib.rs:444
-                             https://www.mojeek.com/search?q=current+           
-                             population+and+annual+growth+rate+of+Kin           
-                             shasa+2024+2025 403                                
-[06/10/26 22:48:54] INFO     HTTP Request: POST                  _client.py:1025
-                             https://html.duckduckgo.com/html/                  
-                             "HTTP/2 200 OK"                                    
-                    INFO     Processing request of type            server.py:727
-                             ListToolsRequest                                   
-[06/10/26 22:48:59] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=Lagos+Nigeria+population+2024+2025+an           
-                             nual+growth+rate&limit=1 200                       
-[06/10/26 22:49:00] INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=Lagos%20Nigeria%20population%202024%20           
-                             2025%20annual%20growth%20rate 200                  
-[06/10/26 22:49:01] INFO     response:                                lib.rs:444
-                             https://yandex.com/search/site/?text=Lag           
-                             os+Nigeria+population+2024+2025+annual+g           
-                             rowth+rate&web=1&searchid=2893136 200              
-[06/10/26 22:49:03] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[INIT].... → Crawl4AI 0.8.6 
-[FETCH]... ↓ 
-https://www.macrotrends.net/global-metrics/cities/22812/cairo/population        
-| ✓ | ⏱: 1.45s 
-[SCRAPE].. ◆ 
-https://www.macrotrends.net/global-metrics/cities/22812/cairo/population        
-| ✓ | ⏱: 0.00s 
-[COMPLETE] ● 
-https://www.macrotrends.net/global-metrics/cities/22812/cairo/population        
-| ✓ | ⏱: 1.46s 
-[06/10/26 22:49:11] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[INIT].... → Crawl4AI 0.8.6 
-[FETCH]... ↓ https://en.wikipedia.org/wiki/Lagos                                
-| ✓ | ⏱: 1.24s 
-[SCRAPE].. ◆ https://en.wikipedia.org/wiki/Lagos                                
-| ✓ | ⏱: 0.31s 
-[COMPLETE] ● https://en.wikipedia.org/wiki/Lagos                                
-| ✓ | ⏱: 1.56s
-```
+    ══════════════════════════════════════════════════════════════════════════════
+    session s8-34a199a0  ─  query: For Lagos, Cairo, and Kinshasa, find current populations and growth rates and tell me which is growing fastest.
+    ══════════════════════════════════════════════════════════════════════════════
+    [memory.read] 8 hit(s) visible to every skill this run
+    [n:1] planner            complete (4.4s)
+    [n:2] researcher         complete (24.6s)
+      └─ inserted token_miser (n:6) between n:2 → n:5
+    [n:3] researcher         complete (32.3s)
+      └─ inserted token_miser (n:7) between n:3 → n:5
+    [n:4] researcher         complete (36.7s)
+      └─ inserted token_miser (n:8) between n:4 → n:5
+      └─ Token Miser: 704→382 chars (46% reduction)
+    [n:6] token_miser        complete (3.3s)
+      └─ Token Miser: 413→232 chars (44% reduction)
+    [n:7] token_miser        complete (1.6s)
+      └─ Token Miser: 921→485 chars (47% reduction)
+    [n:8] token_miser        complete (2.8s)
+    [n:5] formatter          complete (1.6s)
+    
+    ────────────────────────────────────────────────────────────
+    TOKEN MISER — SESSION SUMMARY
+    ────────────────────────────────────────────────────────────
+      Nodes compressed: 3
+      Total input chars: 2,038
+      Total output chars: 1,099
+      Overall compression: 46.1%
+      Gross chars saved (× downstream readers): 939
+      Est. token savings: ~234
+      Miser LLM cost (est. tokens): −0
+      Net estimated token savings: ~234
+    ────────────────────────────────────────────────────────────
+    
+    ══════════════════════════════════════════════════════════════════════════════
+    FINAL: Based on current 2026 estimates, here is the population and growth data for the three cities:
+    
+    | City | Estimated Population | Annual Growth Rate |
+    | :--- | :--- | :--- |
+    | Kinshasa | 18.55M – 21.85M | ~4.36% – 5.13% |
+    | Lagos | 17.80M | 3.78% |
+    | Cairo | 10.12M | 1.07% |
+    
+    Kinshasa is the fastest-growing city among the three, with growth rates consistently exceeding 4% annually. 
+    
+    Sources: 
+    - Lagos: [Macrotrends](https://www.macrotrends.net/global-metrics/cities/22007/lagos/population)
+    - Cairo: [World Population Review](https://worldpopulationreview.com/cities/egypt/cairo)
+    - Kinshasa: [World P
+    ══════════════════════════════════════════════════════════════════════════════
 
 ---
 
@@ -444,138 +222,49 @@ https://www.macrotrends.net/global-metrics/cities/22812/cairo/population
 
 **Query:** `Find the current market capitalization of Apple, Microsoft, and Google (Alphabet), and tell me which company has the highest market cap and by how much it leads the second-place company.`
 
-**Elapsed:** 63.7s  |  **Exit code:** 0
+**Elapsed:** 53.8s  |  **Exit code:** 0
 
-```
-══════════════════════════════════════════════════════════════════════════════
-session s8-308ac992  ─  query: Find the current market capitalization of Apple, Microsoft, and Google (Alphabet), and tell me which company has the highest market cap and by how much it leads the second-place company.
-══════════════════════════════════════════════════════════════════════════════
-[memory.read] 8 hit(s) visible to every skill this run
-[n:1] planner            complete (4.5s)
-[n:2] researcher         complete (36.5s)
-  └─ inserted token_miser (n:6) between n:2 → n:5
-[n:3] researcher         complete (28.5s)
-  └─ inserted token_miser (n:7) between n:3 → n:5
-[n:4] researcher         complete (32.4s)
-  └─ inserted token_miser (n:8) between n:4 → n:5
-  └─ Token Miser: 789→246 chars (69% reduction)
-[n:6] token_miser        complete (9.4s)
-  └─ Token Miser: 824→217 chars (74% reduction)
-[n:7] token_miser        complete (17.1s)
-  └─ Token Miser: 708→389 chars (45% reduction)
-[n:8] token_miser        complete (18.0s)
-[n:5] formatter          complete (1.0s)
-
-────────────────────────────────────────────────────────────
-TOKEN MISER — SESSION SUMMARY
-────────────────────────────────────────────────────────────
-  Nodes compressed: 3
-  Total input chars: 2,321
-  Total output chars: 852
-  Overall compression: 63.3%
-  Gross chars saved (× downstream readers): 1,469
-  Est. token savings: ~367
-  Miser LLM cost (est. tokens): −0
-  Net estimated token savings: ~367
-────────────────────────────────────────────────────────────
-
-══════════════════════════════════════════════════════════════════════════════
-FINAL: As of the most recent data, the market capitalizations for the three companies are as follows:
-
-* Alphabet (Google): ~$4.4 trillion
-* Apple: ~$4.29 trillion
-* Microsoft: ~$3 trillion
-
-Alphabet currently holds the highest market capitalization among the three. It leads the second-place company, Apple, by approximately $0.11 trillion ($110 billion).
-══════════════════════════════════════════════════════════════════════════════
-```
-
-**stderr:**
-```
-[06/10/26 22:50:06] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=current+market+capitalization+of+Alph           
-                             abet+Inc.&limit=1 200                              
-                    INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=current%20market%20capitalization%20of           
-                             %20Alphabet%20Inc. 200                             
-[06/10/26 22:50:07] INFO     response:                                lib.rs:444
-                             https://search.yahoo.com/search;_ylt=Xyt           
-                             ORO-R3ouvmbjQs1huCnyg;_ylu=3MNfd77b9Qeqw           
-                             Hr15RCCU_3XYTaUsKz5hs8JOQhMQ8qOOMc?p=cur           
-                             rent+market+capitalization+of+Alphabet+I           
-                             nc. 200                                            
-[06/10/26 22:50:08] INFO     response: https://www.startpage.com/ 200 lib.rs:444
-[06/10/26 22:50:09] INFO     response:                                lib.rs:444
-                             https://www.startpage.com/sp/search 200            
-                    INFO     Processing request of type            server.py:727
-                             ListToolsRequest                                   
-[06/10/26 22:50:10] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=current+market+capitalization+of+Micr           
-                             osoft+Corporation&limit=1 200                      
-                    INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=current%20market%20capitalization%20of           
-                             %20Microsoft%20Corporation 200                     
-[06/10/26 22:50:12] INFO     response:                                lib.rs:444
-                             https://www.mojeek.com/search?q=current+           
-                             market+capitalization+of+Microsoft+Corpo           
-                             ration 200                                         
-                    INFO     Processing request of type            server.py:727
-                             ListToolsRequest                                   
-[06/10/26 22:50:14] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=current%20market%20capitalization%20of           
-                             %20Apple%20Inc. 200                                
-[06/10/26 22:50:15] INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=current+market+capitalization+of+Appl           
-                             e+Inc.&limit=1 200                                 
-[06/10/26 22:50:16] INFO     response:                                lib.rs:444
-                             https://search.brave.com/search?q=curren           
-                             t+market+capitalization+of+Apple+Inc.&so           
-                             urce=web 200                                       
-                    INFO     Processing request of type            server.py:727
-                             ListToolsRequest                                   
-[06/10/26 22:50:18] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[INIT].... → Crawl4AI 0.8.6 
-[06/10/26 22:50:22] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[FETCH]... ↓ https://finance.yahoo.com/quote/GOOG/                              
-| ✓ | ⏱: 3.53s 
-[SCRAPE].. ◆ https://finance.yahoo.com/quote/GOOG/                              
-| ✓ | ⏱: 0.06s 
-[COMPLETE] ● https://finance.yahoo.com/quote/GOOG/                              
-| ✓ | ⏱: 3.60s 
-[INIT].... → Crawl4AI 0.8.6 
-[FETCH]... ↓ https://companiesmarketcap.com/microsoft/marketcap/                
-| ✓ | ⏱: 1.69s 
-[SCRAPE].. ◆ https://companiesmarketcap.com/microsoft/marketcap/                
-| ✓ | ⏱: 0.02s 
-[COMPLETE] ● https://companiesmarketcap.com/microsoft/marketcap/                
-| ✓ | ⏱: 1.71s 
-[06/10/26 22:50:26] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[INIT].... → Crawl4AI 0.8.6 
-[FETCH]... ↓ https://stockanalysis.com/stocks/aapl/market-cap/                  
-| ✓ | ⏱: 1.47s 
-[SCRAPE].. ◆ https://stockanalysis.com/stocks/aapl/market-cap/                  
-| ✓ | ⏱: 0.01s 
-[COMPLETE] ● https://stockanalysis.com/stocks/aapl/market-cap/                  
-| ✓ | ⏱: 1.49s
-```
+    ══════════════════════════════════════════════════════════════════════════════
+    session s8-608d9bf8  ─  query: Find the current market capitalization of Apple, Microsoft, and Google (Alphabet), and tell me which company has the highest market cap and by how much it leads the second-place company.
+    ══════════════════════════════════════════════════════════════════════════════
+    [memory.read] 8 hit(s) visible to every skill this run
+    [n:1] planner            complete (4.6s)
+    [n:2] researcher         complete (40.2s)
+      └─ inserted token_miser (n:6) between n:2 → n:5
+    [n:3] researcher         complete (27.9s)
+      └─ inserted token_miser (n:7) between n:3 → n:5
+    [n:4] researcher         complete (32.2s)
+      └─ inserted token_miser (n:8) between n:4 → n:5
+      └─ Token Miser: 810→354 chars (56% reduction)
+    [n:6] token_miser        complete (3.4s)
+      └─ Token Miser: 349→202 chars (42% reduction)
+    [n:7] token_miser        complete (4.1s)
+      └─ Token Miser: 856→344 chars (60% reduction)
+    [n:8] token_miser        complete (3.3s)
+    [n:5] formatter          complete (1.2s)
+    
+    ────────────────────────────────────────────────────────────
+    TOKEN MISER — SESSION SUMMARY
+    ────────────────────────────────────────────────────────────
+      Nodes compressed: 3
+      Total input chars: 2,015
+      Total output chars: 900
+      Overall compression: 55.3%
+      Gross chars saved (× downstream readers): 1,115
+      Est. token savings: ~278
+      Miser LLM cost (est. tokens): −0
+      Net estimated token savings: ~278
+    ────────────────────────────────────────────────────────────
+    
+    ══════════════════════════════════════════════════════════════════════════════
+    FINAL: As of June 2026, the market capitalizations for the requested companies are as follows:
+    
+    * Alphabet (Google): ~$4.45 trillion (using the midpoint of the reported $4.41T–$4.49T range)
+    * Apple: ~$4.3 trillion
+    * Microsoft: ~$2.98 trillion
+    
+    Alphabet (Google) currently holds the highest market capitalization. It leads the second-place company, Apple, by approximately $0.15 trillion ($150 billion).
+    ══════════════════════════════════════════════════════════════════════════════
 
 ---
 
@@ -585,131 +274,41 @@ Alphabet currently holds the highest market capitalization among the three. It l
 
 **Query:** `Fetch the Wikipedia article on the Pyramids of Giza and extract: who built them, when were they built, and how long did it take to construct the Great Pyramid. Also investigate the claim that extraterrestrials built the pyramids — present any evidence for or against this, with sources.`
 
-**Elapsed:** 60.8s  |  **Exit code:** 0
+**Elapsed:** 41.6s  |  **Exit code:** 0
 
-```
-══════════════════════════════════════════════════════════════════════════════
-session s8-5c226af9  ─  query: Fetch the Wikipedia article on the Pyramids of Giza and extract: who built them, when were they built, and how long did it take to construct the Great Pyramid. Also investigate the claim that extraterrestrials built the pyramids — present any evidence for or against this, with sources.
-══════════════════════════════════════════════════════════════════════════════
-[memory.read] 8 hit(s) visible to every skill this run
-[n:1] planner            complete (4.3s)
-[n:2] researcher         complete (32.9s)
-  └─ inserted token_miser (n:5) between n:2 → n:4
-[n:3] researcher         complete (28.7s)
-  └─ inserted token_miser (n:6) between n:3 → n:4
-  └─ Token Miser: 1,020→419 chars (59% reduction)
-[n:5] token_miser        complete (18.3s)
-  └─ Token Miser: 1,160→536 chars (54% reduction)
-[n:6] token_miser        complete (15.7s)
-[n:4] formatter          complete (1.2s)
-
-────────────────────────────────────────────────────────────
-TOKEN MISER — SESSION SUMMARY
-────────────────────────────────────────────────────────────
-  Nodes compressed: 2
-  Total input chars: 2,180
-  Total output chars: 955
-  Overall compression: 56.2%
-  Gross chars saved (× downstream readers): 1,225
-  Est. token savings: ~306
-  Miser LLM cost (est. tokens): −0
-  Net estimated token savings: ~306
-────────────────────────────────────────────────────────────
-
-══════════════════════════════════════════════════════════════════════════════
-FINAL: The Giza pyramids were built by the Pharaohs Khufu, Khafre, and Menkaure during the Fourth Dynasty of the Old Kingdom, approximately between 2600 BC and 2500 BC. The construction of the Great Pyramid is estimated to have taken about 26 years. Regarding the claim that extraterrestrials built the pyramids, there is no scientific or archaeological evidence to support this theory. While proponents of the claim often cite the perceived impossibility of ancient humans moving massive stone blocks with such precision, the archaeological consensus is that the pyramids were constructed by ancient Egypti
-══════════════════════════════════════════════════════════════════════════════
-```
-
-**stderr:**
-```
-[06/10/26 22:51:10] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[INIT].... → Crawl4AI 0.8.6 
-[FETCH]... ↓ https://en.wikipedia.org/wiki/Pyramids_of_Giza                     
-| ✓ | ⏱: 2.40s 
-[SCRAPE].. ◆ https://en.wikipedia.org/wiki/Pyramids_of_Giza                     
-| ✓ | ⏱: 0.08s 
-[COMPLETE] ● https://en.wikipedia.org/wiki/Pyramids_of_Giza                     
-| ✓ | ⏱: 2.48s 
-[06/10/26 22:51:13] INFO     Processing request of type            server.py:727
-                             ListToolsRequest                                   
-[06/10/26 22:51:14] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[06/10/26 22:51:15] INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=who%20built%20the%20pyramids%20of%20Gi           
-                             za%20and%20when%20were%20they%20built%20           
-                             and%20how%20long%20did%20the%20Great%20P           
-                             yramid%20take%20to%20build 200                     
-[06/10/26 22:51:16] INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=who+built+the+pyramids+of+Giza+and+wh           
-                             en+were+they+built+and+how+long+did+the+           
-                             Great+Pyramid+take+to+build&limit=1 200            
-                    INFO     response:                                lib.rs:444
-                             https://www.google.com/search?q=who+buil           
-                             t+the+pyramids+of+Giza+and+when+were+the           
-                             y+built+and+how+long+did+the+Great+Pyram           
-                             id+take+to+build&filter=1&start=0&hl=en-           
-                             US&lr=lang_en&cr=countryUS 200                     
-[06/10/26 22:51:18] INFO     response:                                lib.rs:444
-                             https://search.brave.com/search?q=who+bu           
-                             ilt+the+pyramids+of+Giza+and+when+were+t           
-                             hey+built+and+how+long+did+the+Great+Pyr           
-                             amid+take+to+build&source=web 200                  
-[06/10/26 22:51:18] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=evidence%20against%20extraterrestrials           
-                             %20built%20pyramids%20of%20Giza 200                
-[06/10/26 22:51:19] INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=evidence+against+extraterrestrials+bu           
-                             ilt+pyramids+of+Giza&limit=1 200                   
-[06/10/26 22:51:21] INFO     response:                                lib.rs:444
-                             https://www.mojeek.com/search?q=evidence           
-                             +against+extraterrestrials+built+pyramid           
-                             s+of+Giza 200                                      
-                    INFO     Processing request of type            server.py:727
-                             ListToolsRequest                                   
-[06/10/26 22:51:22] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[INIT].... → Crawl4AI 0.8.6 
-[FETCH]... ↓ https://en.wikipedia.org/wiki/Great_Pyramid_of_Giza                
-| ✓ | ⏱: 1.18s 
-[SCRAPE].. ◆ https://en.wikipedia.org/wiki/Great_Pyramid_of_Giza                
-| ✓ | ⏱: 0.21s 
-[COMPLETE] ● https://en.wikipedia.org/wiki/Great_Pyramid_of_Giza                
-| ✓ | ⏱: 1.40s 
-[06/10/26 22:51:26] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[INIT].... → Crawl4AI 0.8.6 
-[FETCH]... ↓ https://larryflaxman.com/did-aliens-build-the-pyramids-of-giza/    
-| ✓ | ⏱: 3.14s 
-[SCRAPE].. ◆ https://larryflaxman.com/did-aliens-build-the-pyramids-of-giza/    
-| ✓ | ⏱: 0.01s 
-[COMPLETE] ● https://larryflaxman.com/did-aliens-build-the-pyramids-of-giza/    
-| ✓ | ⏱: 3.16s 
-[06/10/26 22:51:30] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[06/10/26 22:51:31] INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=how%20many%20years%20did%20it%20take%2           
-                             0to%20build%20the%20Great%20Pyramid%20of           
-                             %20Giza 200                                        
-                    INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=how+many+years+did+it+take+to+build+t           
-                             he+Great+Pyramid+of+Giza&limit=1 200               
-[06/10/26 22:51:32] INFO     response: https://www.startpage.com/ 200 lib.rs:444
-[06/10/26 22:51:33] INFO     response:                                lib.rs:444
-                             https://www.startpage.com/sp/search 200
-```
+    ══════════════════════════════════════════════════════════════════════════════
+    session s8-1a48b655  ─  query: Fetch the Wikipedia article on the Pyramids of Giza and extract: who built them, when were they built, and how long did it take to construct the Great Pyramid. Also investigate the claim that extraterrestrials built the pyramids — present any evidence for or against this, with sources.
+    ══════════════════════════════════════════════════════════════════════════════
+    [memory.read] 8 hit(s) visible to every skill this run
+    [n:1] planner            complete (4.5s)
+    [n:2] researcher         complete (28.8s)
+      └─ inserted token_miser (n:5) between n:2 → n:4
+    [n:3] researcher         complete (21.1s)
+      └─ inserted token_miser (n:6) between n:3 → n:4
+      └─ Token Miser: 834→384 chars (54% reduction)
+    [n:5] token_miser        complete (1.6s)
+      └─ Token Miser: 1,887→975 chars (48% reduction)
+    [n:6] token_miser        complete (2.8s)
+    [n:4] formatter          complete (1.8s)
+    
+    ────────────────────────────────────────────────────────────
+    TOKEN MISER — SESSION SUMMARY
+    ────────────────────────────────────────────────────────────
+      Nodes compressed: 2
+      Total input chars: 2,721
+      Total output chars: 1,359
+      Overall compression: 50.1%
+      Gross chars saved (× downstream readers): 1,362
+      Est. token savings: ~340
+      Miser LLM cost (est. tokens): −0
+      Net estimated token savings: ~340
+    ────────────────────────────────────────────────────────────
+    
+    ══════════════════════════════════════════════════════════════════════════════
+    FINAL: The Pyramids of Giza were built by the pharaohs of the Fourth Dynasty: Khufu, Khafre, and Menkaure. They were constructed during the 26th century BC, with the Great Pyramid of Giza estimated to have taken approximately 20 years to complete (c. 2580–2560 BC).
+    
+    Regarding the claim that extraterrestrials built the pyramids, this is widely classified by the scientific and academic community as pseudoscience. While proponents of the 'ancient astronaut' theory argue that the structural precision of the pyramids exceeds the capabilities of ancient humans, there is extensive evidence for human constru
+    ══════════════════════════════════════════════════════════════════════════════
 
 ---
 
@@ -719,38 +318,21 @@ FINAL: The Giza pyramids were built by the Pharaohs Khufu, Khafre, and Menkaure 
 
 **Query:** `Write a Python function implementing Kadane's algorithm to find the maximum sum subarray in an array that may contain negative numbers. Then test it on the input [-2, 1, -3, 4, -1, 2, 1, -5, 4] and run it in the sandbox to show the result.`
 
-**Elapsed:** 16.6s  |  **Exit code:** 0
+**Elapsed:** 15.2s  |  **Exit code:** 0
 
-```
-══════════════════════════════════════════════════════════════════════════════
-session s8-435aea4c  ─  query: Write a Python function implementing Kadane's algorithm to find the maximum sum subarray in an array that may contain negative numbers. Then test it on the input [-2, 1, -3, 4, -1, 2, 1, -5, 4] and run it in the sandbox to show the result.
-══════════════════════════════════════════════════════════════════════════════
-[memory.read] 8 hit(s) visible to every skill this run
-[n:1] planner            complete (4.3s)
-[n:2] coder              complete (4.1s)
-[n:3] sandbox_executor   complete (0.0s)
-[n:5] sandbox_executor   complete (0.0s)
-[n:4] formatter          complete (4.4s)
-
-══════════════════════════════════════════════════════════════════════════════
-FINAL: To find the maximum sum subarray, we can use Kadane's algorithm, which iterates through the array while maintaining the maximum sum ending at the current position. Here is the Python implementation:
-
-\`\`\`python
-def kadane(arr):
-    max_so_far = arr[0]
-    current_max = arr[0]
-    for i in range(1, len(arr)):
-        current_max = max(arr[i], current_max + arr[i])
-        max_so_far = max(max_so_far, current_max)
-    return max_so_far
-
-nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]
-print(kadane(nums))
-\`\`\`
-
-When executed on the input array `[-2, 1, -3, 4, -1, 2, 1, -5, 4]`, the function returns a maximum
-══════════════════════════════════════════════════════════════════════════════
-```
+    ══════════════════════════════════════════════════════════════════════════════
+    session s8-5f02b671  ─  query: Write a Python function implementing Kadane's algorithm to find the maximum sum subarray in an array that may contain negative numbers. Then test it on the input [-2, 1, -3, 4, -1, 2, 1, -5, 4] and run it in the sandbox to show the result.
+    ══════════════════════════════════════════════════════════════════════════════
+    [memory.read] 8 hit(s) visible to every skill this run
+    [n:1] planner            complete (4.0s)
+    [n:2] coder              complete (3.8s)
+    [n:3] sandbox_executor   complete (0.0s)
+    [n:5] sandbox_executor   complete (0.0s)
+    [n:4] formatter          complete (3.7s)
+    
+    ══════════════════════════════════════════════════════════════════════════════
+    FINAL: The maximum sum of a contiguous subarray within the array [-2, 1, -3, 4, -1, 2, 1, -5, 4] is 6. This sum is achieved by the subarray [4, -1, 2, 1].
+    ══════════════════════════════════════════════════════════════════════════════
 
 ---
 
@@ -760,69 +342,38 @@ When executed on the input array `[-2, 1, -3, 4, -1, 2, 1, -5, 4]`, the function
 
 **Query:** `Fetch the Wikipedia article on the Solar System and summarise its contents covering: the Sun, all eight planets, the asteroid belt, Kuiper belt, and Oort cloud. Provide key facts about each celestial body including size, distance from Sun, orbital period, and unique characteristics. Be thorough and use detailed descriptions.`
 
-**Elapsed:** 57.7s  |  **Exit code:** 0
+**Elapsed:** 30.9s  |  **Exit code:** 0
 
-```
-══════════════════════════════════════════════════════════════════════════════
-session s8-9400bfdd  ─  query: Fetch the Wikipedia article on the Solar System and summarise its contents covering: the Sun, all eight planets, the asteroid belt, Kuiper belt, and Oort cloud. Provide key facts about each celestial body including size, distance from Sun, orbital period, and unique characteristics. Be thorough and use detailed descriptions.
-══════════════════════════════════════════════════════════════════════════════
-[memory.read] 8 hit(s) visible to every skill this run
-[n:1] planner            complete (4.6s)
-[n:2] researcher         complete (12.4s)
-  └─ inserted token_miser (n:5) between n:2 → n:3
-  └─ Token Miser: 993→605 chars (39% reduction)
-[n:5] token_miser        complete (31.3s)
-[n:3] summariser         complete (1.4s)
-[n:4] formatter          complete (4.5s)
-
-────────────────────────────────────────────────────────────
-TOKEN MISER — SESSION SUMMARY
-────────────────────────────────────────────────────────────
-  Nodes compressed: 1
-  Total input chars: 993
-  Total output chars: 605
-  Overall compression: 39.1%
-  Gross chars saved (× downstream readers): 388
-  Est. token savings: ~97
-  Miser LLM cost (est. tokens): −0
-  Net estimated token savings: ~97
-────────────────────────────────────────────────────────────
-
-══════════════════════════════════════════════════════════════════════════════
-FINAL: The Solar System is a 4.6-billion-year-old gravitationally bound system located in the Orion-Cygnus Arm of the Milky Way. It is dominated by the Sun, which accounts for over 99.8% of the system's total mass. The system is organized into several distinct regions:
-
-1. The Sun: The central star and primary source of energy for the system.
-2. Inner Terrestrial Planets: Mercury, Venus, Earth, and Mars, which are primarily rocky in composition.
-3. Asteroid Belt: A region located between the orbits of Mars and Jupiter containing numerous rocky bodies.
-4. Outer Giant Planets: Jupiter, Saturn, Uranus, 
-══════════════════════════════════════════════════════════════════════════════
-```
-
-**stderr:**
-```
-[06/10/26 22:52:27] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     response:                                lib.rs:444
-                             https://en.wikipedia.org/w/api.php?actio           
-                             n=opensearch&profile=fuzzy&limit=1&searc           
-                             h=Wikipedia%20Solar%20System 200                   
-                    INFO     response:                                lib.rs:444
-                             https://grokipedia.com/api/typeahead?que           
-                             ry=Wikipedia+Solar+System&limit=1 200              
-[06/10/26 22:52:28] INFO     response:                                lib.rs:444
-                             https://search.yahoo.com/search;_ylt=L8W           
-                             -xjwK1pS6eviMT8__I9x8;_ylu=SBWIEcZxPIVE0           
-                             emin7vaeowscSaOWcgK88gBO24GguYp7tY?p=Wik           
-                             ipedia+Solar+System 200                            
-                    INFO     Processing request of type            server.py:727
-                             ListToolsRequest                                   
-[06/10/26 22:52:31] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[INIT].... → Crawl4AI 0.8.6 
-[FETCH]... ↓ https://en.wikipedia.org/wiki/Solar_System                         
-| ✓ | ⏱: 1.37s 
-[SCRAPE].. ◆ https://en.wikipedia.org/wiki/Solar_System                         
-| ✓ | ⏱: 0.34s 
-[COMPLETE] ● https://en.wikipedia.org/wiki/Solar_System                         
-| ✓ | ⏱: 1.72s
-```
+    ══════════════════════════════════════════════════════════════════════════════
+    session s8-48951dda  ─  query: Fetch the Wikipedia article on the Solar System and summarise its contents covering: the Sun, all eight planets, the asteroid belt, Kuiper belt, and Oort cloud. Provide key facts about each celestial body including size, distance from Sun, orbital period, and unique characteristics. Be thorough and use detailed descriptions.
+    ══════════════════════════════════════════════════════════════════════════════
+    [memory.read] 8 hit(s) visible to every skill this run
+    [n:1] planner            complete (4.6s)
+    [n:2] researcher         complete (12.8s)
+      └─ inserted token_miser (n:5) between n:2 → n:3
+      └─ Token Miser: 1,503→694 chars (54% reduction)
+    [n:5] token_miser        complete (3.6s)
+    [n:3] summariser         complete (1.4s)
+    [n:4] formatter          complete (4.2s)
+    
+    ────────────────────────────────────────────────────────────
+    TOKEN MISER — SESSION SUMMARY
+    ────────────────────────────────────────────────────────────
+      Nodes compressed: 1
+      Total input chars: 1,503
+      Total output chars: 694
+      Overall compression: 53.8%
+      Gross chars saved (× downstream readers): 809
+      Est. token savings: ~202
+      Miser LLM cost (est. tokens): −0
+      Net estimated token savings: ~202
+    ────────────────────────────────────────────────────────────
+    
+    ══════════════════════════════════════════════════════════════════════════════
+    FINAL: The Solar System is a gravitationally bound system centered around the Sun, a G-type main-sequence star that accounts for over 99.8% of the system's total mass. The system is organized into two distinct groups of planets: the four inner terrestrial planets (Mercury, Venus, Earth, and Mars) and the four outer gas and ice giants (Jupiter, Saturn, Uranus, and Neptune). 
+    
+    Key components include:
+    - The Sun: The central star and primary mass of the system.
+    - Terrestrial Planets: Mercury (the smallest and closest to the Sun), Venus, Earth, and Mars.
+    - Giant Planets: Jupiter (the largest planet), Satu
+    ══════════════════════════════════════════════════════════════════════════════
