@@ -1,6 +1,6 @@
-# Multi-Agent DAG — Growing-Graph Orchestrator
+# DAGent — Growing-Graph Orchestrator
 
-A **multi-agent orchestration system** where each user query spawns a dynamic, growing DAG (Directed Acyclic Graph) of specialised AI skills. The graph is not pre-defined — it expands at runtime through five distinct mechanisms, enabling parallel research, automatic compression, code execution, critic evaluation, and error recovery without hard-coded workflows.
+A **single-agent orchestration system** where each user query spawns a dynamic, growing DAG (Directed Acyclic Graph) of specialised AI skills. The graph is not pre-defined — it expands at runtime through five distinct mechanisms, enabling parallel research, automatic compression, code execution, critic evaluation, and error recovery without hard-coded workflows.
 
 ---
 
